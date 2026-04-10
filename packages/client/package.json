@@ -1,0 +1,53 @@
+{
+  "name": "@tovsa7/zerosync-client",
+  "version": "0.1.4",
+  "description": "End-to-end encrypted real-time collaboration SDK — AES-256-GCM, WebRTC, Yjs CRDT",
+  "license": "MIT",
+  "keywords": [
+    "e2e-encryption",
+    "webrtc",
+    "crdt",
+    "yjs",
+    "collaboration",
+    "realtime",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tovsa7/ZeroSync.git",
+    "directory": "packages/client"
+  },
+  "homepage": "https://github.com/tovsa7/ZeroSync#readme",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "y-protocols": "^1.0.6",
+    "yjs": "^13.6.18"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "fast-check": "^3.19.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}

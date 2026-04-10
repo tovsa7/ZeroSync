@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-sdk:
+    name: SDK — test + typecheck
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: packages/client/package-lock.json
+      - run: npm ci
+        working-directory: packages/client
+      - run: npm test
+        working-directory: packages/client
+      - run: npm run typecheck
+        working-directory: packages/client
+
+  build-demo:
+    name: Demo — build
+    runs-on: ubuntu-latest
+    needs: test-sdk
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: packages/client/package-lock.json
+      - name: Build SDK
+        run: npm ci && npm run build
+        working-directory: packages/client
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: demo/package-lock.json
+      - name: Build demo
+        run: npm ci && npm run build
+        working-directory: demo
+        env:
+          VITE_SERVER_URL: wss://demo.zerosync.dev/ws

@@ -1,0 +1,67 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Build client SDK
+        working-directory: packages/client
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build demo SPA
+        working-directory: demo
+        env:
+          # Signaling server URL — set in repo variables (Settings → Variables).
+          # Example: wss://123.45.67.89:8080/ws (Hetzner IP)
+          # When a custom domain is ready, change to wss://demo.zerosync.dev/ws
+          VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+        run: |
+          npm ci
+          npm run build
+
+      # SPA routing: copy index.html → 404.html so GitHub Pages serves the
+      # app for all routes (React Router / hash-based routing).
+      - name: SPA fallback
+        run: cp demo/dist/index.html demo/dist/404.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3.0.1
+        with:
+          path: demo/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4.0.5
