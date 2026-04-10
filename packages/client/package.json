@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/tovsa7/ZeroSync.git",
+    "url": "git+https://github.com/tovsa7/ZeroSync.git",
     "directory": "packages/client"
   },
   "homepage": "https://github.com/tovsa7/ZeroSync#readme",
