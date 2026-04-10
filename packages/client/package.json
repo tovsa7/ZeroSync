@@ -40,8 +40,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "y-protocols": "^1.0.6",
-    "yjs": "^13.6.18"
+    "y-protocols": "1.0.7",
+    "yjs": "13.6.30"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",
