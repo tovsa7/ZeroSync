@@ -44,7 +44,8 @@ jobs:
         working-directory: packages/client
       - run: npm run build
         working-directory: packages/client
-      - run: npm publish --access public
+      - run: npm config delete always-auth
+      - run: npm publish --provenance --access public
         working-directory: packages/client
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

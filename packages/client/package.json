@@ -1,6 +1,6 @@
 {
   "name": "@tovsa7/zerosync-client",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "End-to-end encrypted real-time collaboration SDK — AES-256-GCM, WebRTC, Yjs CRDT",
   "license": "MIT",
   "keywords": [
