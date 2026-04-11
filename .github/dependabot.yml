@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /packages/client
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      yjs-ecosystem:
+        patterns:
+          - "yjs"
+          - "y-protocols"
+          - "lib0"
