@@ -14,7 +14,6 @@
  */
 
 import * as Y from 'yjs'
-import { encrypt } from './crypto.js'
 import { Transport, MessageType } from './transport.js'
 
 const REMOTE_ORIGIN = 'remote'
