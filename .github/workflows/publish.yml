@@ -1,9 +1,11 @@
 name: Publish SDK
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      otp:
+        description: 'npm 2FA OTP (6-digit code)'
+        required: true
 
 jobs:
   test:
@@ -44,8 +46,7 @@ jobs:
         working-directory: packages/client
       - run: npm run build
         working-directory: packages/client
-      - run: npm config delete always-auth
-      - run: npm publish --provenance --access public
+      - run: npm publish --provenance --access public --otp ${{ inputs.otp }}
         working-directory: packages/client
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
