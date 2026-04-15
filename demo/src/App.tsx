@@ -134,6 +134,7 @@ export function App() {
   )
   const [showLanding, setShowLanding] = useState(() => !window.location.hash.includes('room='))
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [tryDemoHover, setTryDemoHover] = useState(false)
 
   // peerId must be a UUIDv4 — the server validates this format on HELLO.
   const [peerId] = useState(() => crypto.randomUUID())
@@ -340,20 +341,49 @@ export function App() {
     return (
       <div style={styles.container}>
 
-        <section style={styles.hero}>
+        <section style={{
+          ...styles.hero,
+          background: 'radial-gradient(ellipse 900px 500px at 50% -80px, rgba(78,204,163,0.10) 0%, transparent 70%), radial-gradient(ellipse at 50% -20%, #0f2035 0%, #1a1a2e 55%)',
+          ...(isMobile && { padding: '44px 16px 40px' }),
+        }}>
           <div style={styles.heroBadge}>Open Source / MIT</div>
-          <h1 style={styles.heroTitle}>
-            Real-time sync where the<br />server cannot read your data.
+          <h1 style={{
+            ...styles.heroTitle,
+            background: 'linear-gradient(140deg, #ffffff 30%, #4ecca3 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            ...(isMobile && { fontSize: 26 }),
+          }}>
+            Real-time collaboration,<br />end-to-end encrypted.
           </h1>
-          <p style={styles.heroSubtitle}>
-            Self-hosted CRDT collaboration with end-to-end encryption.<br />
-            Built on Yjs + WebRTC + Web Crypto API. Deploy in 5 minutes.
+          <p style={{
+            ...styles.heroSubtitle,
+            ...(isMobile && { fontSize: 15 }),
+          }}>
+            Open-source, self-hosted sync with AES-256-GCM encryption.<br />
+            No vendor lock-in. Deploy in 5 minutes with Docker.
           </p>
-          <div style={styles.heroCtas}>
-            <button style={styles.tryDemoButton} onClick={handleTryDemo}>
+          <div style={{
+            ...styles.heroCtas,
+            ...(isMobile && { flexDirection: 'column' }),
+          }}>
+            <button
+              style={{
+                ...styles.tryDemoButton,
+                backgroundColor: tryDemoHover ? '#3ab890' : '#4ecca3',
+                ...(isMobile && { width: '100%' }),
+              }}
+              onClick={handleTryDemo}
+              onMouseEnter={() => setTryDemoHover(true)}
+              onMouseLeave={() => setTryDemoHover(false)}
+            >
               Try Live Demo
             </button>
-            <a href="https://github.com/tovsa7/ZeroSync" style={styles.githubButton}
+            <a href="https://github.com/tovsa7/ZeroSync" style={{
+              ...styles.githubButton,
+              ...(isMobile && { width: '100%', textAlign: 'center', justifyContent: 'center' }),
+            }}
                target="_blank" rel="noopener noreferrer">
               GitHub
             </a>
@@ -385,15 +415,21 @@ doc.getText('editor').observe(e => { /* ... */ })`}</code></pre>
         <section style={styles.howSection}>
           <h2 style={styles.sectionHeading}>How it works</h2>
           <div style={styles.featureGrid}>
-            <div style={styles.featureCard}>
+            <div style={{
+              ...styles.featureCard,
+              ...(isMobile && { minWidth: '100%' }),
+            }}>
               <div style={styles.featureCardTitle}>Zero-Knowledge Server</div>
               <p style={styles.featureCardText}>
-                The server handles signaling only — hashed room IDs
-                and ICE candidates. Document content never touches
-                the server in plaintext.
+                The server routes encrypted blobs only — it never sees
+                your document content, user identities, or plaintext.
+                The room key lives in the URL fragment and never leaves the browser.
               </p>
             </div>
-            <div style={styles.featureCard}>
+            <div style={{
+              ...styles.featureCard,
+              ...(isMobile && { minWidth: '100%' }),
+            }}>
               <div style={styles.featureCardTitle}>P2P First, Relay Fallback</div>
               <p style={styles.featureCardText}>
                 Peers connect directly via WebRTC DataChannel.
@@ -401,7 +437,10 @@ doc.getText('editor').observe(e => { /* ... */ })`}</code></pre>
                 only encrypted blobs it cannot read.
               </p>
             </div>
-            <div style={styles.featureCard}>
+            <div style={{
+              ...styles.featureCard,
+              ...(isMobile && { minWidth: '100%' }),
+            }}>
               <div style={styles.featureCardTitle}>AES-256-GCM via Web Crypto</div>
               <p style={styles.featureCardText}>
                 Every CRDT update is encrypted in-browser using the
@@ -409,7 +448,10 @@ doc.getText('editor').observe(e => { /* ... */ })`}</code></pre>
                 No third-party crypto dependencies.
               </p>
             </div>
-            <div style={styles.featureCard}>
+            <div style={{
+              ...styles.featureCard,
+              ...(isMobile && { minWidth: '100%' }),
+            }}>
               <div style={styles.featureCardTitle}>Self-Hosted in 5 Minutes</div>
               <p style={styles.featureCardText}>
                 Run your own server and relay via Docker.
@@ -448,16 +490,21 @@ docker pull ghcr.io/tovsa7/zerosync-relay:latest
 
 docker compose up -d`}</code></pre>
           </div>
+          <p style={{ margin: '10px 0 0', fontSize: 12, color: '#555570', textAlign: 'center' }}>
+            Docker images coming soon — star the repo for updates.
+          </p>
           <div style={styles.selfHostDetails}>
-            <div style={styles.selfHostItem}>
+            <div style={{
+              ...styles.selfHostItem,
+              ...(isMobile && { flex: '0 0 calc(50% - 8px)' }),
+            }}>
               <span style={styles.selfHostLabel}>License</span>
               <span style={styles.selfHostValue}>BSL 1.1 (server) / MIT (client)</span>
             </div>
-            <div style={styles.selfHostItem}>
-              <span style={styles.selfHostLabel}>Free tier</span>
-              <span style={styles.selfHostValue}>5 rooms / 10 peers per room</span>
-            </div>
-            <div style={styles.selfHostItem}>
+            <div style={{
+              ...styles.selfHostItem,
+              ...(isMobile && { flex: '0 0 calc(50% - 8px)' }),
+            }}>
               <span style={styles.selfHostLabel}>Minimum</span>
               <span style={styles.selfHostValue}>512 MB RAM</span>
             </div>
@@ -667,6 +714,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: '#1a1a2e',
     minHeight: '100vh',
     boxSizing: 'border-box',
+    overflowX: 'hidden',
   },
   footer: {
     textAlign: 'center',
@@ -690,33 +738,36 @@ const styles: Record<string, React.CSSProperties> = {
   // ── Landing page ────────────────────────────────────────────────────────
   hero: {
     textAlign: 'center',
-    padding: '64px 24px 48px',
+    padding: '80px 24px 72px',
   },
   heroBadge: {
     display: 'inline-block',
-    padding: '4px 12px',
+    padding: '4px 14px',
     fontSize: 11,
     fontFamily: '"Fira Code", "Consolas", monospace',
     fontWeight: 600,
     color: '#4ecca3',
-    border: '1px solid #4ecca3',
+    backgroundColor: 'rgba(78, 204, 163, 0.08)',
+    border: '1px solid rgba(78, 204, 163, 0.4)',
     borderRadius: 999,
-    marginBottom: 20,
-    letterSpacing: '0.05em',
+    marginBottom: 28,
+    letterSpacing: '0.08em',
     textTransform: 'uppercase' as const,
+    boxShadow: '0 0 16px rgba(78, 204, 163, 0.12)',
   },
   heroTitle: {
-    margin: '0 0 20px',
-    fontSize: 34,
+    margin: '0 0 24px',
+    fontSize: 42,
     fontWeight: 800,
     color: '#ffffff',
-    lineHeight: '1.25',
+    lineHeight: '1.15',
+    letterSpacing: '-0.02em',
   },
   heroSubtitle: {
-    margin: '0 auto 32px',
-    fontSize: 15,
+    margin: '0 auto 36px',
+    fontSize: 16,
     color: '#8888aa',
-    lineHeight: '1.7',
+    lineHeight: '1.8',
     maxWidth: 520,
   },
   heroCtas: {
@@ -735,29 +786,36 @@ const styles: Record<string, React.CSSProperties> = {
     border: 'none',
     borderRadius: 8,
     cursor: 'pointer',
+    transition: 'background-color 0.15s ease, box-shadow 0.15s ease',
+    boxShadow: '0 0 28px rgba(78, 204, 163, 0.30)',
+    boxSizing: 'border-box' as const,
   },
   githubButton: {
     display: 'inline-flex',
     alignItems: 'center',
+    justifyContent: 'center',
     padding: '14px 32px',
     fontSize: 16,
     fontWeight: 700,
     minHeight: 44,
     color: '#e0e0e0',
     backgroundColor: 'transparent',
-    border: '1px solid #1a3a6e',
+    border: '1px solid #4ecca3',
     borderRadius: 8,
     cursor: 'pointer',
     textDecoration: 'none',
+    boxSizing: 'border-box' as const,
   },
   installSection: {
-    paddingBottom: 40,
+    paddingBottom: 56,
   },
   codeBlock: {
     backgroundColor: '#0d1b2a',
     borderRadius: 8,
     border: '1px solid #1a3a6e',
     overflow: 'hidden' as const,
+    maxWidth: '100%',
+    boxSizing: 'border-box' as const,
   },
   codeBlockHeader: {
     display: 'flex',
@@ -778,6 +836,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     padding: '16px 14px',
     overflowX: 'auto' as const,
+    whiteSpace: 'pre' as const,
   },
   codeBlockCode: {
     fontFamily: '"Fira Code", "Consolas", monospace',
@@ -786,14 +845,15 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#c0c0cc',
   },
   howSection: {
-    paddingBottom: 40,
+    paddingBottom: 64,
   },
   sectionHeading: {
     margin: '0 0 24px',
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 700,
     color: '#ffffff',
     textAlign: 'center',
+    letterSpacing: '-0.01em',
   },
   featureGrid: {
     display: 'flex',
@@ -803,25 +863,26 @@ const styles: Record<string, React.CSSProperties> = {
   featureCard: {
     flex: '1 1 calc(50% - 8px)',
     minWidth: 260,
-    padding: '20px 16px',
-    backgroundColor: '#16213e',
-    borderRadius: 8,
-    border: '1px solid #1a3a6e',
+    padding: '24px 20px',
+    background: 'linear-gradient(145deg, #16213e 0%, #1a2845 100%)',
+    borderRadius: 12,
+    border: '1px solid #1e3a5e',
+    boxShadow: '0 4px 24px rgba(0, 0, 0, 0.35)',
   },
   featureCardTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: 700,
     color: '#4ecca3',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   featureCardText: {
     margin: 0,
-    fontSize: 13,
+    fontSize: 14,
     color: '#8888aa',
-    lineHeight: '1.6',
+    lineHeight: '1.7',
   },
   dataFlowSection: {
-    paddingBottom: 40,
+    paddingBottom: 64,
   },
   dataFlowCaption: {
     margin: '12px 0 0',
@@ -831,7 +892,7 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: '1.6',
   },
   selfHostSection: {
-    paddingBottom: 40,
+    paddingBottom: 64,
   },
   selfHostDetails: {
     display: 'flex',
@@ -868,6 +929,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '14px 16px',
     backgroundColor: '#16213e',
     borderRadius: 8,
+    border: '1px solid #1e3a5e',
     marginBottom: 24,
     fontSize: 13,
     flexWrap: 'wrap' as const,
@@ -877,10 +939,10 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
   },
   trustSep: {
-    color: '#2a2a4e',
+    color: '#3a3a5e',
   },
   footerSep: {
-    color: '#2a2a4e',
+    color: '#3a3a5e',
     margin: '0 8px',
   },
 
