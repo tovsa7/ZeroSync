@@ -186,6 +186,21 @@ demo/              React collaborative editor demo
 
 ---
 
+## For companies
+
+Running ZeroSync in production? I'm actively working with design partners building HIPAA/GDPR-sensitive collaboration apps. If you need:
+
+- Production license for the signaling server (BSL → commercial)
+- Direct support from the maintainer
+- Priority on feature requests and roadmap input
+- Help with self-hosted deployment
+
+Email [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) with a short description of your use case.
+
+Early-stage design partners get meaningful discounts in exchange for feedback and, optionally, a case study.
+
+---
+
 ## License
 
 Client SDK: [MIT](LICENSE)  
