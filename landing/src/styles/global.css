@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+/* ───────────────────────────────────────────────────────────────────
+ * Design tokens — ZeroSync landing.
+ * Dark-mode-only for v1. Light-mode toggle planned for v2.
+ * ─────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* Typography */
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono:  'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Backgrounds */
+  --color-bg:         #0A0A0B;   /* near-black with slight warmth */
+  --color-surface:    #141416;   /* card / elevated surfaces */
+  --color-surface-2:  #1c1c1f;   /* hover / raised elements */
+  --color-border:     #27272a;   /* subtle borders */
+
+  /* Text */
+  --color-text:       #E8E8E8;   /* body */
+  --color-text-muted: #9B9B9B;   /* secondary */
+  --color-text-dim:   #6b6b6b;   /* tertiary (code comments, footer) */
+
+  /* Accents */
+  --color-accent:        #5EEAD4;  /* teal — signals crypto-native w/o bro vibe */
+  --color-accent-muted:  #2DD4BF;
+  --color-accent-bg:     rgba(94, 234, 212, 0.08);
+  --color-danger:        #F87171;
+  --color-success:       #86EFAC;
+
+  /* Radii */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+}
+
+/* Base styles */
+
+html {
+  background: var(--color-bg);
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.6;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Links — subtle underline on hover, never on resting */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 150ms ease, opacity 150ms ease;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+/* Headings — tight tracking */
+h1, h2, h3, h4 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+/* Monospace — JetBrains Mono if available */
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Code blocks — dark surface */
+pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+pre code {
+  background: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Inline code */
+:not(pre) > code {
+  background: var(--color-accent-bg);
+  color: var(--color-accent);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+}
+
+/* Selection */
+::selection {
+  background: var(--color-accent);
+  color: var(--color-bg);
+}
+
+/* Focus visible — keyboard accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

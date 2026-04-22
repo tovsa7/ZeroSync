@@ -1,0 +1,59 @@
+---
+/**
+ * Why.astro — 5 value bullets with simple icons.
+ * Icons are minimal line-art SVGs, monochrome.
+ */
+
+const items = [
+  {
+    title: 'Zero-knowledge server',
+    body: "Room keys live only in the browser. The server sees hashed identifiers and opaque ciphertext. Even under subpoena, there is nothing to disclose.",
+    icon: '<path d="M12 3L4 7v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V7l-8-4z" /><path d="M9 12l2 2 4-4" />',
+  },
+  {
+    title: 'Architecture supports regulated workflows',
+    body: "HIPAA technical safeguards, attorney-client privilege, GDPR data-minimization by design. Not certified — architecture enables your own compliance program.",
+    icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="13" x2="15" y2="13" /><line x1="9" y1="17" x2="15" y2="17" />',
+  },
+  {
+    title: 'Self-hosted',
+    body: "Run on your own Hetzner / AWS / bare metal via one Docker image. No vendor-cloud dependency. License is BSL 1.1 (free for dev, paid in production).",
+    icon: '<rect x="2" y="6" width="20" height="12" rx="2" /><line x1="7" y1="12" x2="7.01" y2="12" /><line x1="12" y1="12" x2="12.01" y2="12" /><line x1="17" y1="12" x2="17.01" y2="12" />',
+  },
+  {
+    title: 'Open-source client, auditable crypto',
+    body: "MIT-licensed client SDK. Web Crypto API only — no third-party crypto libraries. 141 tests including property-based tests via fast-check. SLSA provenance on every release.",
+    icon: '<polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />',
+  },
+  {
+    title: 'Real React hooks',
+    body: 'Companion package @tovsa7/zerosync-react — useYText, usePresence, useMyPresence, useConnectionStatus. Works with Tiptap, CodeMirror, Quill via standard Yjs bindings.',
+    icon: '<circle cx="12" cy="12" r="3" /><path d="M12 2a10 10 0 0110 10c0 5-5 10-10 10" /><path d="M2 12a10 10 0 0110-10" />',
+  },
+]
+---
+
+<section class="px-6 py-24 border-t border-neutral-900">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
+      Why ZeroSync
+    </h2>
+    <p class="text-neutral-400 mb-12 max-w-2xl">
+      Zero-knowledge by architecture, not by promise.
+    </p>
+
+    <ul class="grid gap-8 sm:gap-10">
+      {items.map(({ title, body, icon }) => (
+        <li class="flex items-start gap-5">
+          <div class="shrink-0 size-11 rounded-lg border border-neutral-800 bg-neutral-900/60 flex items-center justify-center text-accent">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-neutral-100 mb-1">{title}</h3>
+            <p class="text-neutral-400 leading-relaxed">{body}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>

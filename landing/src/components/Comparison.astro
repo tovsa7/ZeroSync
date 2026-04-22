@@ -1,0 +1,74 @@
+---
+/**
+ * Comparison.astro — feature table vs Liveblocks / Yjs / Jazz.tools.
+ */
+
+interface Row {
+  feature: string
+  zerosync: string
+  liveblocks: string
+  yjs: string
+  jazz: string
+}
+
+const rows: Row[] = [
+  { feature: 'End-to-end encrypted',    zerosync: '✓ AES-256-GCM',   liveblocks: '✗ cloud reads data', yjs: '✗',           jazz: '~ opt-in' },
+  { feature: 'Self-hosted',             zerosync: '✓ one Docker',    liveblocks: '✗ cloud only',       yjs: '✓',           jazz: '✓' },
+  { feature: 'Zero-knowledge server',   zerosync: '✓',               liveblocks: '✗',                  yjs: '✗',           jazz: '✗' },
+  { feature: 'Open-source client',      zerosync: 'MIT',             liveblocks: 'Proprietary',        yjs: 'MIT',         jazz: 'MPL-2.0' },
+  { feature: 'Production license',      zerosync: 'BSL 1.1 self-hosted', liveblocks: 'SaaS subscription', yjs: 'Free',     jazz: 'Free + paid cloud' },
+  { feature: 'CRDT sync',               zerosync: 'Yjs',             liveblocks: 'Proprietary',        yjs: 'Yjs',         jazz: 'Custom CoJSON' },
+  { feature: 'React hooks',             zerosync: '✓',               liveblocks: '✓',                  yjs: 'community',   jazz: '✓' },
+]
+
+const markClass = (v: string) =>
+  v.startsWith('✓')
+    ? 'text-success font-medium'
+    : v.startsWith('✗')
+      ? 'text-neutral-600'
+      : v.startsWith('~')
+        ? 'text-neutral-400'
+        : 'text-neutral-300'
+---
+
+<section class="px-6 py-24 border-t border-neutral-900" id="comparison">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
+      How it compares
+    </h2>
+    <p class="text-neutral-400 mb-10 max-w-2xl">
+      Versus the most common alternatives for real-time collaboration.
+    </p>
+
+    <div class="overflow-x-auto -mx-6 sm:mx-0">
+      <div class="min-w-[720px] px-6 sm:px-0">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-neutral-800">
+              <th class="text-left font-semibold text-neutral-400 py-4 pr-4 w-1/4"></th>
+              <th class="text-left font-semibold text-accent py-4 px-4 w-1/5">ZeroSync</th>
+              <th class="text-left font-semibold text-neutral-300 py-4 px-4 w-1/5">Liveblocks</th>
+              <th class="text-left font-semibold text-neutral-300 py-4 px-4 w-1/5">Yjs + y-websocket</th>
+              <th class="text-left font-semibold text-neutral-300 py-4 px-4 w-1/5">Jazz.tools</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, i) => (
+              <tr class:list={['border-b border-neutral-900', i % 2 === 1 && 'bg-neutral-900/30']}>
+                <td class="py-3 pr-4 font-medium text-neutral-200">{row.feature}</td>
+                <td class:list={['py-3 px-4', markClass(row.zerosync)]}>{row.zerosync}</td>
+                <td class:list={['py-3 px-4', markClass(row.liveblocks)]}>{row.liveblocks}</td>
+                <td class:list={['py-3 px-4', markClass(row.yjs)]}>{row.yjs}</td>
+                <td class:list={['py-3 px-4', markClass(row.jazz)]}>{row.jazz}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .text-success { color: var(--color-success); }
+</style>

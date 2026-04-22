@@ -1,0 +1,116 @@
+---
+/**
+ * QuickStart.astro — install + minimal code example.
+ * Pure-CSS tabs via radio+label pattern (no JS).
+ */
+
+import { Code } from 'astro:components'
+
+const reactCode = `import { ZeroSyncProvider, useYText, useConnectionStatus } from '@tovsa7/zerosync-react'
+import { deriveRoomKey } from '@tovsa7/zerosync-client'
+
+function App({ roomKey }: { roomKey: CryptoKey }) {
+  return (
+    <ZeroSyncProvider
+      serverUrl="wss://sync.example.com/ws"
+      roomId="my-room"
+      roomKey={roomKey}
+      peerId={crypto.randomUUID()}
+      nonce={btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))))}
+      hmac=""
+      iceServers={[{ urls: 'stun:stun.l.google.com:19302' }]}
+    >
+      <Editor />
+    </ZeroSyncProvider>
+  )
+}
+
+function Editor() {
+  const status = useConnectionStatus()
+  const text   = useYText('editor')
+  if (status !== 'connected') return <p>Status: {status}</p>
+  return (
+    <textarea
+      value={text?.toString() ?? ''}
+      onChange={(e) => {
+        text?.delete(0, text.length)
+        text?.insert(0, e.target.value)
+      }}
+    />
+  )
+}`
+
+const vanillaCode = `import { Room, deriveRoomKey } from '@tovsa7/zerosync-client'
+
+// Room key is derived client-side and never transmitted.
+const secret  = crypto.getRandomValues(new Uint8Array(32))
+const roomKey = await deriveRoomKey(secret, 'my-room-id')
+
+const room = await Room.join({
+  serverUrl:  'wss://your-server/ws',
+  roomId:     'my-room-id',
+  roomKey,
+  peerId:     crypto.randomUUID(),
+  nonce:      btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))),
+  hmac:       '',
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+})
+
+const text = room.getDoc().getText('editor')
+text.observe(() => console.log(text.toString()))
+
+room.updatePresence({ name: 'Alice' })
+room.leave()`
+---
+
+<section class="px-6 py-24 border-t border-neutral-900" id="quick-start">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
+      Quick start
+    </h2>
+    <p class="text-neutral-400 mb-8 max-w-2xl">
+      Minimal working example in 30 lines. Pick your stack.
+    </p>
+
+    {/* Pure-CSS tabs via hidden radio buttons */}
+    <div class="tabs">
+      <input type="radio" name="qs-tabs" id="qs-react"   class="sr-only peer/react" checked />
+      <input type="radio" name="qs-tabs" id="qs-vanilla" class="sr-only peer/vanilla" />
+
+      <div class="flex gap-1 mb-5 border-b border-neutral-800" role="tablist">
+        <label
+          for="qs-react"
+          class="cursor-pointer px-4 py-2.5 text-sm font-medium text-neutral-400 border-b-2 border-transparent hover:text-neutral-200 peer-checked/react:text-accent peer-checked/react:border-accent transition-colors"
+          role="tab"
+        >
+          React
+        </label>
+        <label
+          for="qs-vanilla"
+          class="cursor-pointer px-4 py-2.5 text-sm font-medium text-neutral-400 border-b-2 border-transparent hover:text-neutral-200 peer-checked/vanilla:text-accent peer-checked/vanilla:border-accent transition-colors"
+          role="tab"
+        >
+          Vanilla SDK
+        </label>
+      </div>
+
+      {/* React pane */}
+      <div class="hidden peer-checked/react:block" role="tabpanel">
+        <pre class="mb-4 text-sm text-neutral-400"><code>npm install @tovsa7/zerosync-react @tovsa7/zerosync-client react yjs</code></pre>
+        <Code code={reactCode} lang="tsx" theme="github-dark" />
+      </div>
+
+      {/* Vanilla pane */}
+      <div class="hidden peer-checked/vanilla:block" role="tabpanel">
+        <pre class="mb-4 text-sm text-neutral-400"><code>npm install @tovsa7/zerosync-client yjs</code></pre>
+        <Code code={vanillaCode} lang="typescript" theme="github-dark" />
+      </div>
+    </div>
+
+    <p class="mt-6 text-sm text-neutral-500">
+      See the
+      {' '}<a href="https://github.com/tovsa7/ZeroSync/tree/main/packages/react" class="text-accent hover:underline">React hooks package</a>{' '}
+      for useYMap, useYArray, usePresence, and Tiptap / CodeMirror integration examples.
+    </p>
+  </div>
+</section>

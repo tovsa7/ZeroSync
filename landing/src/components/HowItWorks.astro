@@ -1,0 +1,53 @@
+---
+/**
+ * HowItWorks.astro — brief technical explanation with diagram.
+ */
+
+const bullets = [
+  { label: 'P2P by default', body: 'Peers connect directly via WebRTC DataChannel.' },
+  { label: 'Encrypted relay fallback', body: 'When NAT/firewall blocks P2P, server relays opaque ciphertext (max 64 KB, 30 s TTL).' },
+  { label: 'Zero-knowledge server', body: 'Holds no keys, logs only SHA-256-hashed room / peer IDs.' },
+  { label: 'Mutual peer auth', body: 'AES-GCM challenge-response on DataChannel open — proves key possession without transmission.' },
+]
+---
+
+<section class="px-6 py-24 border-t border-neutral-900" id="how-it-works">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
+      How it works
+    </h2>
+    <p class="text-neutral-400 mb-10 max-w-2xl">
+      AES-256-GCM encryption applied client-side before any data leaves the browser.
+    </p>
+
+    <div class="mb-10 p-6 rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-x-auto">
+      <pre class="text-xs sm:text-sm text-neutral-400 leading-relaxed"><code>{`Browser A                 ZeroSync Server              Browser B
+    │                           │                           │
+    ├── encrypt(data, key) ─────┤                           │
+    │                           │                           │
+    │◄═════════ WebRTC DataChannel (P2P) ═════════════════►│
+    │                           │  relay fallback only      │
+    │                      ciphertext                       │
+    │                   (server cannot decrypt)             │`}</code></pre>
+    </div>
+
+    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {bullets.map(({ label, body }) => (
+        <li class="flex gap-3 items-start">
+          <span class="shrink-0 mt-1.5 size-1.5 rounded-full bg-accent"></span>
+          <div>
+            <span class="font-semibold text-neutral-100">{label}</span>
+            <span class="text-neutral-400"> — {body}</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <p class="mt-8 text-sm text-neutral-500">
+      Full protocol spec:
+      {' '}<a href="https://github.com/tovsa7/ZeroSync/blob/main/docs/PROTOCOL.md" class="text-accent hover:underline">docs/PROTOCOL.md</a>
+      {' '}·{' '}
+      <a href="https://github.com/tovsa7/ZeroSync/blob/main/docs/SECURITY.md" class="text-accent hover:underline">docs/SECURITY.md</a>
+    </p>
+  </div>
+</section>

@@ -1,0 +1,43 @@
+---
+/**
+ * Footer.astro — minimal links + copyright.
+ */
+
+const year = new Date().getFullYear()
+
+const links = [
+  { label: 'GitHub',          href: 'https://github.com/tovsa7/ZeroSync' },
+  { label: 'npm — client',    href: 'https://www.npmjs.com/package/@tovsa7/zerosync-client' },
+  { label: 'npm — react',     href: 'https://www.npmjs.com/package/@tovsa7/zerosync-react' },
+  { label: 'Security',        href: 'https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md' },
+  { label: 'Self-hosting',    href: 'https://github.com/tovsa7/ZeroSync/blob/main/SELF-HOSTED.md' },
+]
+---
+
+<footer class="px-6 py-12 border-t border-neutral-900 mt-0">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+      <div>
+        <div class="font-bold text-neutral-100 mb-1">ZeroSync</div>
+        <div class="text-xs text-neutral-500">
+          Built by a solo developer. Honest.
+        </div>
+      </div>
+
+      <nav aria-label="Footer" class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-neutral-400">
+        {links.map(({ label, href }) => (
+          <a href={href} class="hover:text-accent transition-colors">{label}</a>
+        ))}
+      </nav>
+    </div>
+
+    <div class="mt-10 pt-6 border-t border-neutral-900 text-xs text-neutral-600 flex flex-col sm:flex-row sm:justify-between gap-2">
+      <div>
+        © {year} ZeroSync · Client MIT, Server BSL 1.1
+      </div>
+      <div>
+        Open-source E2E collaboration SDK
+      </div>
+    </div>
+  </div>
+</footer>

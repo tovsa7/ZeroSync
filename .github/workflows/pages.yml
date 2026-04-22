@@ -26,12 +26,21 @@ jobs:
         with:
           node-version: "22"
 
+      # ── Build client SDK (needed for demo's dependency resolution) ──
       - name: Build client SDK
         working-directory: packages/client
         run: |
           npm ci
           npm run build
 
+      # ── Build landing page (Astro static, deploys to /ZeroSync/ root) ──
+      - name: Build landing
+        working-directory: landing
+        run: |
+          npm ci
+          npm run build
+
+      # ── Build demo (React + Vite, deploys to /ZeroSync/demo/) ──
       - name: Build demo SPA
         working-directory: demo
         env:
@@ -39,20 +48,29 @@ jobs:
           # Example: wss://123.45.67.89:8080/ws (Hetzner IP)
           # When a custom domain is ready, change to wss://demo.zerosync.dev/ws
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
-          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+          # Demo moved from /ZeroSync/ root to /ZeroSync/demo/ subpath.
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/demo/
         run: |
           npm ci
           npm run build
 
-      # SPA routing: copy index.html → 404.html so GitHub Pages serves the
-      # app for all routes (React Router / hash-based routing).
-      - name: SPA fallback
-        run: cp demo/dist/index.html demo/dist/404.html
+      # ── Combine artifacts: landing at root, demo at /demo/ ──
+      - name: Assemble gh-pages artifact
+        run: |
+          mkdir -p combined/demo
+          cp -r landing/dist/. combined/
+          cp -r demo/dist/. combined/demo/
+          # SPA fallback so client-side routing in demo works on direct URLs
+          cp demo/dist/index.html combined/demo/404.html
+          echo "=== combined/ layout ==="
+          ls -la combined/
+          echo "=== combined/demo/ ==="
+          ls -la combined/demo/ | head -15
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3
         with:
-          path: demo/dist
+          path: combined
 
   deploy:
     needs: build

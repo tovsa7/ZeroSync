@@ -1,0 +1,53 @@
+---
+/**
+ * UseCases.astro — 5 industry cards grid.
+ */
+
+const cases = [
+  {
+    label: 'Legal tech',
+    body:  "Privileged attorney-client work, live document redlines, e-signing ceremonies with witnesses.",
+  },
+  {
+    label: 'Mental health / therapy',
+    body:  "Therapist-client sessions with notes, homework, and chat that the platform itself cannot see.",
+  },
+  {
+    label: 'Finance / fintech',
+    body:  "Token deal rooms, M&A data rooms, OTC trading desk coordination, private equity deal flow.",
+  },
+  {
+    label: 'Enterprise R&D',
+    body:  "Cross-team collaboration on IP, patents, regulatory filings, trade secrets.",
+  },
+  {
+    label: 'Regulated SaaS with EU customers',
+    body:  "A DPA-grade architecture you can point at during procurement.",
+  },
+]
+---
+
+<section class="px-6 py-24 border-t border-neutral-900">
+  <div class="max-w-5xl mx-auto">
+    <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
+      Use cases
+    </h2>
+    <p class="text-neutral-400 mb-12 max-w-2xl">
+      Products where two or more humans collaborate on sensitive content —
+      and "your server cannot read it" is itself a feature.
+    </p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {cases.map(({ label, body }) => (
+        <article class="p-6 rounded-xl border border-neutral-800 bg-neutral-900/40 hover:border-neutral-700 hover:bg-neutral-900/80 transition-colors">
+          <h3 class="text-base font-semibold text-neutral-100 mb-2">{label}</h3>
+          <p class="text-sm text-neutral-400 leading-relaxed">{body}</p>
+        </article>
+      ))}
+    </div>
+
+    <p class="mt-10 text-sm text-neutral-500 italic">
+      If your product is single-user, async-only, or entirely AI-driven — ZeroSync is probably not your fit.
+    </p>
+  </div>
+</section>

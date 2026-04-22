@@ -1,0 +1,80 @@
+---
+/**
+ * Base.astro — shared <html> scaffold for all pages.
+ *
+ * Provides:
+ * - SEO meta tags (title, description, OG, Twitter card, JSON-LD)
+ * - Favicon + font loading
+ * - Global stylesheet
+ * - Body container
+ */
+
+import '../styles/global.css'
+
+interface Props {
+  title?:       string
+  description?: string
+  canonical?:   string
+}
+
+const {
+  title       = 'ZeroSync — End-to-end encrypted real-time collaboration SDK',
+  description = 'Add Google Docs-style multi-user editing to any web app where the server mathematically cannot read plaintext. Self-hosted in one Docker command. HIPAA, GDPR, attorney-client privilege by architecture.',
+  canonical,
+} = Astro.props
+
+const siteUrl = 'https://tovsa7.github.io/ZeroSync/'
+const canonicalUrl = canonical ?? siteUrl
+const ogImage = new URL('og-image.png', Astro.site + Astro.url.pathname).href
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    {/* Favicon */}
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+
+    {/* Open Graph */}
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content="ZeroSync" />
+
+    {/* Twitter Card */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {/* JSON-LD — SoftwareApplication schema */}
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context':        'https://schema.org',
+      '@type':           'SoftwareApplication',
+      name:              'ZeroSync',
+      description,
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem:   'Web, Linux, Docker',
+      url:               siteUrl,
+      license:           'MIT (client SDK) + BSL 1.1 (server)',
+      offers: [
+        { '@type': 'Offer', name: 'Community', price: '0',    priceCurrency: 'USD' },
+        { '@type': 'Offer', name: 'Starter',   price: '149',  priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
+        { '@type': 'Offer', name: 'Business',  price: '599',  priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
+        { '@type': 'Offer', name: 'Enterprise', price: '25000', priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'ANN' } },
+      ],
+    })} />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

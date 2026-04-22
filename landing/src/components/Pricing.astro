@@ -1,0 +1,179 @@
+---
+/**
+ * Pricing.astro — 4 tier cards. Business highlighted as "Most popular".
+ */
+
+interface Tier {
+  name:       string
+  priceMo:    string | null
+  priceYr:    string
+  yrNote:     string | null
+  rooms:      string
+  peers:      string
+  sla:        string
+  features:   string[]
+  cta:        { text: string; href: string }
+  popular?:   boolean
+}
+
+const tiers: Tier[] = [
+  {
+    name:     'Community',
+    priceMo:  null,
+    priceYr:  'Free',
+    yrNote:   null,
+    rooms:    '5',
+    peers:    '10 per room',
+    sla:      'GitHub Discussions',
+    features: [
+      'Full SDK + server',
+      'Dev / test / evaluation',
+      'Community support',
+      'All crypto features',
+    ],
+    cta: { text: 'Get started', href: 'https://github.com/tovsa7/ZeroSync' },
+  },
+  {
+    name:     'Starter',
+    priceMo:  '$149',
+    priceYr:  '$1,490/yr',
+    yrNote:   '2 months free',
+    rooms:    '100',
+    peers:    '25 per room',
+    sla:      '3 business days',
+    features: [
+      'Production license',
+      'Email support',
+      'All Community features',
+      '12-month license term',
+    ],
+    cta: { text: 'Contact sales', href: 'mailto:contact.zerosync@proton.me?subject=Starter%20tier' },
+  },
+  {
+    name:     'Business',
+    priceMo:  '$599',
+    priceYr:  '$5,990/yr',
+    yrNote:   '2 months free',
+    rooms:    '1,000',
+    peers:    '50 per room',
+    sla:      '1 business day',
+    features: [
+      'TOM compliance template',
+      'Private issue tracker',
+      'All Starter features',
+      'Production-scale ready',
+    ],
+    cta: { text: 'Contact sales', href: 'mailto:contact.zerosync@proton.me?subject=Business%20tier' },
+    popular: true,
+  },
+  {
+    name:     'Enterprise',
+    priceMo:  null,
+    priceYr:  'From $25,000/yr',
+    yrNote:   'Custom contract',
+    rooms:    'Unlimited',
+    peers:    'Unlimited',
+    sla:      '4 business hours',
+    features: [
+      'Signed DPA + BAA',
+      'Custom SLA',
+      'Quarterly founder sync',
+      'Priority roadmap input',
+    ],
+    cta: { text: 'Talk to us', href: 'mailto:contact.zerosync@proton.me?subject=Enterprise%20inquiry' },
+  },
+]
+---
+
+<section class="px-6 py-24 border-t border-neutral-900" id="pricing">
+  <div class="max-w-6xl mx-auto">
+    <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
+      Pricing
+    </h2>
+    <p class="text-neutral-400 mb-12 max-w-2xl">
+      Open-core: client SDK is MIT, signaling server is BSL 1.1 (free for dev/test,
+      paid in production).
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {tiers.map((tier) => (
+        <article
+          class:list={[
+            'relative flex flex-col p-6 rounded-xl border transition-colors',
+            tier.popular
+              ? 'border-accent bg-neutral-900/80 ring-1 ring-accent/20'
+              : 'border-neutral-800 bg-neutral-900/40 hover:border-neutral-700',
+          ]}
+        >
+          {tier.popular && (
+            <span class="absolute -top-3 left-6 px-2.5 py-0.5 rounded-full bg-accent text-neutral-950 text-xs font-semibold">
+              Most popular
+            </span>
+          )}
+
+          <h3 class="text-lg font-semibold text-neutral-100 mb-1">{tier.name}</h3>
+
+          <div class="mb-4 min-h-[3.5rem]">
+            {tier.priceMo ? (
+              <>
+                <span class="text-3xl font-bold text-neutral-100">{tier.priceMo}</span>
+                <span class="text-sm text-neutral-500">/mo</span>
+                <div class="text-xs text-neutral-500 mt-1">
+                  or <span class="text-neutral-400">{tier.priceYr}</span>
+                  {tier.yrNote && <span class="text-accent"> · {tier.yrNote}</span>}
+                </div>
+              </>
+            ) : (
+              <>
+                <span class="text-3xl font-bold text-neutral-100">{tier.priceYr}</span>
+                {tier.yrNote && <div class="text-xs text-neutral-500 mt-1">{tier.yrNote}</div>}
+              </>
+            )}
+          </div>
+
+          <dl class="mb-5 space-y-1.5 text-xs">
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Rooms</dt>
+              <dd class="text-neutral-300 font-medium">{tier.rooms}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Peers</dt>
+              <dd class="text-neutral-300 font-medium">{tier.peers}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-neutral-500">Email SLA</dt>
+              <dd class="text-neutral-300 font-medium">{tier.sla}</dd>
+            </div>
+          </dl>
+
+          <ul class="flex-1 space-y-2 text-sm text-neutral-300 mb-6">
+            {tier.features.map((f) => (
+              <li class="flex gap-2 items-start">
+                <svg aria-hidden="true" class="shrink-0 size-4 mt-0.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          <a
+            href={tier.cta.href}
+            class:list={[
+              'block text-center px-4 py-2.5 rounded-lg font-medium text-sm transition-colors',
+              tier.popular
+                ? 'bg-accent text-neutral-950 hover:bg-accent-muted'
+                : 'border border-neutral-700 text-neutral-200 hover:border-accent hover:text-accent',
+            ]}
+          >
+            {tier.cta.text}
+          </a>
+        </article>
+      ))}
+    </div>
+
+    <p class="mt-10 text-sm text-neutral-500 max-w-3xl">
+      Community tier is fully-featured for development and evaluation. Production deployments
+      require a paid tier. Self-hosted only — no managed cloud (by design — the server sees
+      only ciphertext, so a managed cloud wouldn't add value over your own).
+    </p>
+  </div>
+</section>

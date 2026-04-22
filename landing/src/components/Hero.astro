@@ -1,0 +1,75 @@
+---
+/**
+ * Hero.astro — above-the-fold headline, sub-pitch, CTAs, architecture diagram.
+ */
+
+const base = import.meta.env.BASE_URL
+---
+
+<section class="relative min-h-screen flex items-center px-6 py-24 overflow-hidden">
+  {/* Soft radial accent in background */}
+  <div
+    aria-hidden="true"
+    class="absolute inset-0 opacity-30 pointer-events-none"
+    style="background: radial-gradient(ellipse 60% 50% at 50% 30%, rgba(94, 234, 212, 0.15), transparent 60%);"
+  />
+
+  <div class="relative max-w-5xl mx-auto w-full">
+    {/* Small top badge */}
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-neutral-800 bg-neutral-900/60 backdrop-blur text-xs text-neutral-400 mb-8">
+      <span class="size-1.5 rounded-full bg-accent animate-pulse"></span>
+      v0.1.1 on npm · 141 tests · OpenSSF Best Practices
+    </div>
+
+    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-neutral-100 mb-6 max-w-4xl">
+      End-to-end encrypted
+      <br class="hidden sm:block" />
+      real-time collaboration SDK.
+    </h1>
+
+    <p class="text-xl sm:text-2xl text-neutral-400 mb-6 font-medium">
+      Self-hosted in one Docker command.
+    </p>
+
+    <p class="text-base sm:text-lg text-neutral-400 mb-10 max-w-2xl leading-relaxed">
+      Add Google Docs-style multi-user editing, presence, and chat to any web app —
+      where your server mathematically cannot read plaintext. Built on WebRTC, Yjs, and
+      AES-256-GCM via the browser's native Web Crypto API.
+    </p>
+
+    <div class="flex flex-wrap gap-3 mb-16">
+      <a
+        href={`${base}demo/`}
+        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-accent text-neutral-950 font-semibold hover:bg-accent-muted transition-colors"
+      >
+        Try the demo
+        <span aria-hidden="true">→</span>
+      </a>
+      <a
+        href="#pricing"
+        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-neutral-700 text-neutral-200 hover:border-accent hover:text-accent transition-colors"
+      >
+        View pricing
+      </a>
+      <a
+        href="https://github.com/tovsa7/ZeroSync"
+        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-neutral-700 text-neutral-200 hover:border-accent hover:text-accent transition-colors"
+      >
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 00-3.8 23.4c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.6-4-1.6-.5-1.4-1.3-1.8-1.3-1.8-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1.1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.3.5-2.4 1.2-3.2-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 016 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0012 .3"/></svg>
+        GitHub
+      </a>
+    </div>
+
+    {/* Simple architecture diagram */}
+    <div class="max-w-3xl">
+      <pre class="text-xs sm:text-sm text-neutral-500 leading-relaxed"><code>{`Browser A          ZeroSync Server          Browser B
+    │                    │                       │
+    ├── encrypt(data) ───┤                       │
+    │                    │                       │
+    │◄═══════ WebRTC (P2P) or encrypted relay ══►│
+    │                    │                       │
+    │               ciphertext only              │
+    │          (server cannot decrypt)           │`}</code></pre>
+    </div>
+  </div>
+</section>
