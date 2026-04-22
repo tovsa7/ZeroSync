@@ -5,11 +5,15 @@
 
 const year = new Date().getFullYear()
 
+const base = import.meta.env.BASE_URL
+
 const links = [
   { label: 'GitHub',          href: 'https://github.com/tovsa7/ZeroSync' },
   { label: 'npm — client',    href: 'https://www.npmjs.com/package/@tovsa7/zerosync-client' },
   { label: 'npm — react',     href: 'https://www.npmjs.com/package/@tovsa7/zerosync-react' },
   { label: 'Security',        href: 'https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md' },
+  { label: 'Compliance',      href: 'https://github.com/tovsa7/ZeroSync/blob/main/COMPLIANCE.md' },
+  { label: 'security.txt',    href: `${base}.well-known/security.txt` },
   { label: 'Self-hosting',    href: 'https://github.com/tovsa7/ZeroSync/blob/main/SELF-HOSTED.md' },
 ]
 ---

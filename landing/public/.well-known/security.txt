@@ -1,0 +1,31 @@
+# ZeroSync Security Contact
+# https://tovsa7.github.io/ZeroSync/.well-known/security.txt
+# Conforms to RFC 9116 (https://datatracker.ietf.org/doc/html/rfc9116).
+
+Contact: mailto:contact.zerosync@proton.me
+Expires: 2027-04-22T00:00:00.000Z
+Preferred-Languages: en, ru
+Canonical: https://tovsa7.github.io/ZeroSync/.well-known/security.txt
+Policy: https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md
+
+# Reporting guidelines
+#
+# Please email the above address with:
+#   1. A clear description of the vulnerability
+#   2. Steps to reproduce (proof-of-concept preferred)
+#   3. Your disclosure preferences (public credit, anonymity, etc.)
+#
+# We aim to acknowledge reports within 3 business days and provide a
+# reasonable timeline for remediation. Please do not open public GitHub
+# issues for security vulnerabilities.
+#
+# Scope includes the signaling server, relay node, and both client
+# packages (@tovsa7/zerosync-client, @tovsa7/zerosync-react).
+#
+# Out of scope:
+#   - Third-party dependencies (report to upstream maintainers)
+#   - Denial-of-service from excessive WebRTC handshake spam
+#   - Known limitations documented in docs/SECURITY.md threat model
+#
+# Safe-harbor: good-faith security research is welcome. We will not
+# pursue legal action against researchers who comply with this policy.
