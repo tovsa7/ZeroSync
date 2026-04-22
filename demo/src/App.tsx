@@ -317,7 +317,7 @@ export function App() {
   }, [])
 
   const statusColor =
-    status === 'connected'    ? '#4ecca3' :
+    status === 'connected'    ? '#5EEAD4' :
     status === 'reconnecting' ? '#f0a030' :
     status === 'local'        ? '#f0a030' : '#888'
   const statusLabel =
@@ -329,7 +329,7 @@ export function App() {
   // Connection quality indicator derived values.
   const connIsP2P  = connSummary.total > 0 && connSummary.p2p === connSummary.total
   const connIsMix  = connSummary.total > 0 && connSummary.p2p > 0 && !connIsP2P
-  const connColor  = connIsP2P ? '#4ecca3' : '#f0a030'
+  const connColor  = connIsP2P ? '#5EEAD4' : '#f0a030'
   const connLabel  = connIsP2P ? 'Direct encrypted connection'
                    : connIsMix ? 'Partially direct connection'
                    : 'Encrypted via relay'
@@ -343,13 +343,13 @@ export function App() {
 
         <section style={{
           ...styles.hero,
-          background: 'radial-gradient(ellipse 900px 500px at 50% -80px, rgba(78,204,163,0.10) 0%, transparent 70%), radial-gradient(ellipse at 50% -20%, #0f2035 0%, #1a1a2e 55%)',
+          background: 'radial-gradient(ellipse 900px 500px at 50% -80px, rgba(78,204,163,0.10) 0%, transparent 70%), radial-gradient(ellipse at 50% -20%, #0a0a0b 0%, #0a0a0b 55%)',
           ...(isMobile && { padding: '44px 16px 40px' }),
         }}>
           <div style={styles.heroBadge}>Open Source / MIT</div>
           <h1 style={{
             ...styles.heroTitle,
-            background: 'linear-gradient(140deg, #ffffff 30%, #4ecca3 100%)',
+            background: 'linear-gradient(140deg, #ffffff 30%, #5EEAD4 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -371,7 +371,7 @@ export function App() {
             <button
               style={{
                 ...styles.tryDemoButton,
-                backgroundColor: tryDemoHover ? '#3ab890' : '#4ecca3',
+                backgroundColor: tryDemoHover ? '#2DD4BF' : '#5EEAD4',
                 ...(isMobile && { width: '100%' }),
               }}
               onClick={handleTryDemo}
@@ -711,7 +711,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '24px 16px',
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     color: '#e0e0e0',
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#0a0a0b',
     minHeight: '100vh',
     boxSizing: 'border-box',
     overflowX: 'hidden',
@@ -746,7 +746,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 11,
     fontFamily: '"Fira Code", "Consolas", monospace',
     fontWeight: 600,
-    color: '#4ecca3',
+    color: '#5EEAD4',
     backgroundColor: 'rgba(78, 204, 163, 0.08)',
     border: '1px solid rgba(78, 204, 163, 0.4)',
     borderRadius: 999,
@@ -781,8 +781,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 16,
     fontWeight: 700,
     minHeight: 44,
-    color: '#1a1a2e',
-    backgroundColor: '#4ecca3',
+    color: '#0a0a0b',
+    backgroundColor: '#5EEAD4',
     border: 'none',
     borderRadius: 8,
     cursor: 'pointer',
@@ -800,7 +800,7 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: 44,
     color: '#e0e0e0',
     backgroundColor: 'transparent',
-    border: '1px solid #4ecca3',
+    border: '1px solid #5EEAD4',
     borderRadius: 8,
     cursor: 'pointer',
     textDecoration: 'none',
@@ -810,9 +810,9 @@ const styles: Record<string, React.CSSProperties> = {
     paddingBottom: 56,
   },
   codeBlock: {
-    backgroundColor: '#0d1b2a',
+    backgroundColor: '#0a0a0b',
     borderRadius: 8,
-    border: '1px solid #1a3a6e',
+    border: '1px solid #1c1c1f',
     overflow: 'hidden' as const,
     maxWidth: '100%',
     boxSizing: 'border-box' as const,
@@ -822,13 +822,13 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '8px 14px',
-    backgroundColor: '#16213e',
-    borderBottom: '1px solid #1a3a6e',
+    backgroundColor: '#171717',
+    borderBottom: '1px solid #1c1c1f',
   },
   codeBlockLabel: {
     fontSize: 11,
     fontWeight: 700,
-    color: '#4ecca3',
+    color: '#5EEAD4',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.08em',
   },
@@ -864,15 +864,15 @@ const styles: Record<string, React.CSSProperties> = {
     flex: '1 1 calc(50% - 8px)',
     minWidth: 260,
     padding: '24px 20px',
-    background: 'linear-gradient(145deg, #16213e 0%, #1a2845 100%)',
+    background: 'linear-gradient(145deg, #171717 0%, #141416 100%)',
     borderRadius: 12,
-    border: '1px solid #1e3a5e',
+    border: '1px solid #171717',
     boxShadow: '0 4px 24px rgba(0, 0, 0, 0.35)',
   },
   featureCardTitle: {
     fontSize: 15,
     fontWeight: 700,
-    color: '#4ecca3',
+    color: '#5EEAD4',
     marginBottom: 10,
   },
   featureCardText: {
@@ -903,15 +903,15 @@ const styles: Record<string, React.CSSProperties> = {
   selfHostItem: {
     flex: '1 1 180px',
     padding: '12px 14px',
-    backgroundColor: '#16213e',
+    backgroundColor: '#171717',
     borderRadius: 6,
-    border: '1px solid #1a3a6e',
+    border: '1px solid #1c1c1f',
   },
   selfHostLabel: {
     display: 'block',
     fontSize: 11,
     fontWeight: 700,
-    color: '#4ecca3',
+    color: '#5EEAD4',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.08em',
     marginBottom: 4,
@@ -927,15 +927,15 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 12,
     padding: '14px 16px',
-    backgroundColor: '#16213e',
+    backgroundColor: '#171717',
     borderRadius: 8,
-    border: '1px solid #1e3a5e',
+    border: '1px solid #171717',
     marginBottom: 24,
     fontSize: 13,
     flexWrap: 'wrap' as const,
   },
   trustItem: {
-    color: '#4ecca3',
+    color: '#5EEAD4',
     fontWeight: 600,
   },
   trustSep: {
@@ -964,7 +964,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   info: {
     padding: '12px 16px',
-    backgroundColor: '#16213e',
+    backgroundColor: '#171717',
     borderRadius: 8,
     marginBottom: 16,
     fontSize: 13,
@@ -981,13 +981,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   code: {
     fontFamily: '"Fira Code", "Consolas", monospace',
-    backgroundColor: '#0f3460',
+    backgroundColor: '#262626',
     padding: '1px 6px',
     borderRadius: 4,
     fontSize: 12,
   },
   secure: {
-    color: '#4ecca3',
+    color: '#5EEAD4',
     fontWeight: 600,
   },
   nameRow: {
@@ -1002,8 +1002,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 14,         // overridden to 16 on mobile via inline style
     minHeight: 44,
     color: '#e0e0e0',
-    backgroundColor: '#16213e',
-    border: '1px solid #1a3a6e',
+    backgroundColor: '#171717',
+    border: '1px solid #1c1c1f',
     borderRadius: 6,
     outline: 'none',
     boxSizing: 'border-box',
@@ -1014,8 +1014,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     minHeight: 44,
     color: '#e0e0e0',
-    backgroundColor: '#0f3460',
-    border: '1px solid #1a3a6e',
+    backgroundColor: '#262626',
+    border: '1px solid #1c1c1f',
     borderRadius: 6,
     cursor: 'pointer',
     whiteSpace: 'nowrap',
@@ -1024,9 +1024,9 @@ const styles: Record<string, React.CSSProperties> = {
   // ── Onboarding hints ────────────────────────────────────────────────────
   onboardingBox: {
     padding: '14px 16px',
-    backgroundColor: '#16213e',
+    backgroundColor: '#171717',
     borderRadius: 8,
-    border: '1px solid #4ecca3',
+    border: '1px solid #5EEAD4',
     marginBottom: 12,
   },
   onboardingHint: {
@@ -1044,8 +1044,8 @@ const styles: Record<string, React.CSSProperties> = {
     width: 20,
     height: 20,
     borderRadius: '50%',
-    backgroundColor: '#4ecca3',
-    color: '#1a1a2e',
+    backgroundColor: '#5EEAD4',
+    color: '#0a0a0b',
     fontSize: 11,
     fontWeight: 700,
     flexShrink: 0,
@@ -1056,8 +1056,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 13,
     fontWeight: 600,
     minHeight: 44,
-    color: '#1a1a2e',
-    backgroundColor: '#4ecca3',
+    color: '#0a0a0b',
+    backgroundColor: '#5EEAD4',
     border: 'none',
     borderRadius: 6,
     cursor: 'pointer',
@@ -1074,8 +1074,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 14,
     lineHeight: '1.6',
     color: '#e0e0e0',
-    backgroundColor: '#0f3460',
-    border: '1px solid #1a3a6e',
+    backgroundColor: '#262626',
+    border: '1px solid #1c1c1f',
     borderRadius: 8,
     resize: 'vertical',
     outline: 'none',
@@ -1093,7 +1093,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     minHeight: 44,
     color: '#e0e0e0',
-    backgroundColor: '#e94560',
+    backgroundColor: '#5EEAD4',
     border: 'none',
     borderRadius: 6,
     cursor: 'pointer',
@@ -1109,7 +1109,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 8,
     padding: '8px 12px',
-    backgroundColor: '#16213e',
+    backgroundColor: '#171717',
     borderRadius: 6,
     border: '1px solid',
     marginBottom: 12,
@@ -1142,9 +1142,9 @@ const styles: Record<string, React.CSSProperties> = {
   // ── Encryption proof panel ───────────────────────────────────────────────
   proofPanel: {
     marginBottom: 24,
-    backgroundColor: '#16213e',
+    backgroundColor: '#171717',
     borderRadius: 8,
-    border: '1px solid #1a3a6e',
+    border: '1px solid #1c1c1f',
     overflow: 'hidden',
   },
   proofToggle: {
@@ -1167,13 +1167,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   proofBody: {
     padding: '0 14px 14px',
-    borderTop: '1px solid #1a3a6e',
+    borderTop: '1px solid #1c1c1f',
   },
   proofLabel: {
     margin: '12px 0 10px',
     fontSize: 11,
     fontWeight: 700,
-    color: '#4ecca3',
+    color: '#5EEAD4',
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
   },
@@ -1193,7 +1193,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: '"Fira Code", "Consolas", monospace',
     fontSize: 11,
     color: '#c0c0cc',
-    backgroundColor: '#0f3460',
+    backgroundColor: '#262626',
     padding: '1px 6px',
     borderRadius: 3,
   },
@@ -1202,8 +1202,8 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: '"Fira Code", "Consolas", monospace',
     fontSize: 11,
     lineHeight: '1.8',
-    color: '#4ecca3',
-    backgroundColor: '#0f3460',
+    color: '#5EEAD4',
+    backgroundColor: '#262626',
     padding: '10px 12px',
     borderRadius: 6,
     wordBreak: 'break-all',

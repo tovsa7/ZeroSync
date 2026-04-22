@@ -127,7 +127,7 @@ Browser A                 ZeroSync Server              Browser B
 - **Zero-knowledge server** — holds no keys, logs only SHA-256-hashed room / peer IDs
 - **Mutual peer auth** — AES-GCM challenge-response on DataChannel open proves both peers possess the room key without transmitting it
 
-Full protocol spec: [`docs/PROTOCOL.md`](docs/PROTOCOL.md) · Security invariants: [`docs/SECURITY.md`](docs/SECURITY.md)
+Full threat model + disclosure process: [`SECURITY.md`](https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md)
 
 ## Comparison
 
