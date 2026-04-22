@@ -66,6 +66,9 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+      # Demo depends on @zerosync/client + @zerosync/react via file:../packages/*.
+      # Both packages' dist/ output must exist for Vite's commonjs resolver
+      # to locate their package.json main/module/exports entries.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: 24
@@ -74,6 +77,14 @@ jobs:
       - name: Build SDK
         run: npm ci && npm run build
         working-directory: packages/client
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: packages/react/package-lock.json
+      - name: Build react hooks package
+        run: npm ci && npm run build
+        working-directory: packages/react
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: 24
