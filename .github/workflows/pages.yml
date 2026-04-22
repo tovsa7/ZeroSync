@@ -26,9 +26,16 @@ jobs:
         with:
           node-version: "22"
 
-      # ── Build client SDK (needed for demo's dependency resolution) ──
+      # ── Build client SDK (needed for demo's + react package's deps) ──
       - name: Build client SDK
         working-directory: packages/client
+        run: |
+          npm ci
+          npm run build
+
+      # ── Build react hooks package (demo depends on its dist/) ──
+      - name: Build react hooks package
+        working-directory: packages/react
         run: |
           npm ci
           npm run build
