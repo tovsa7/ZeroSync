@@ -1,0 +1,64 @@
+{
+  "name": "@tovsa7/zerosync-react",
+  "version": "0.1.0",
+  "description": "React hooks for ZeroSync — end-to-end encrypted real-time collaboration",
+  "license": "MIT",
+  "keywords": [
+    "react",
+    "hooks",
+    "e2e-encryption",
+    "webrtc",
+    "crdt",
+    "yjs",
+    "collaboration",
+    "realtime",
+    "zerosync"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tovsa7/ZeroSync.git",
+    "directory": "packages/react"
+  },
+  "homepage": "https://github.com/tovsa7/ZeroSync#readme",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@tovsa7/zerosync-client": "^0.1.7",
+    "react": "^18.0.0",
+    "yjs": "^13.6.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.0.0",
+    "@tovsa7/zerosync-client": "file:../client",
+    "@types/node": "^25.5.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "fast-check": "^4.6.0",
+    "jsdom": "^25.0.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "yjs": "^13.6.30"
+  }
+}
