@@ -1,34 +1,67 @@
 ---
 /**
  * Comparison.astro — feature table vs Liveblocks / Yjs / Jazz.tools.
+ *
+ * Focused on true differentiators. ZeroSync column gets accent styling.
  */
 
+type Mark = 'yes' | 'no' | 'partial'
+
 interface Row {
-  feature: string
-  zerosync: string
-  liveblocks: string
-  yjs: string
-  jazz: string
+  feature:    string
+  zerosync:   { mark: Mark; note?: string }
+  liveblocks: { mark: Mark; note?: string }
+  yjs:        { mark: Mark; note?: string }
+  jazz:       { mark: Mark; note?: string }
 }
 
 const rows: Row[] = [
-  { feature: 'End-to-end encrypted',    zerosync: '✓ AES-256-GCM',   liveblocks: '✗ cloud reads data', yjs: '✗',           jazz: '~ opt-in' },
-  { feature: 'Self-hosted',             zerosync: '✓ one Docker',    liveblocks: '✗ cloud only',       yjs: '✓',           jazz: '✓' },
-  { feature: 'Zero-knowledge server',   zerosync: '✓',               liveblocks: '✗',                  yjs: '✗',           jazz: '✗' },
-  { feature: 'Open-source client',      zerosync: 'MIT',             liveblocks: 'Proprietary',        yjs: 'MIT',         jazz: 'MPL-2.0' },
-  { feature: 'Production license',      zerosync: 'BSL 1.1 self-hosted', liveblocks: 'SaaS subscription', yjs: 'Free',     jazz: 'Free + paid cloud' },
-  { feature: 'CRDT sync',               zerosync: 'Yjs',             liveblocks: 'Proprietary',        yjs: 'Yjs',         jazz: 'Custom CoJSON' },
-  { feature: 'React hooks',             zerosync: '✓',               liveblocks: '✓',                  yjs: 'community',   jazz: '✓' },
+  {
+    feature:    'End-to-end encrypted',
+    zerosync:   { mark: 'yes', note: 'AES-256-GCM' },
+    liveblocks: { mark: 'no' },
+    yjs:        { mark: 'no' },
+    jazz:       { mark: 'partial', note: 'opt-in' },
+  },
+  {
+    feature:    'Zero-knowledge server',
+    zerosync:   { mark: 'yes' },
+    liveblocks: { mark: 'no' },
+    yjs:        { mark: 'no' },
+    jazz:       { mark: 'no' },
+  },
+  {
+    feature:    'Self-hosted',
+    zerosync:   { mark: 'yes' },
+    liveblocks: { mark: 'no', note: 'cloud only' },
+    yjs:        { mark: 'yes' },
+    jazz:       { mark: 'yes' },
+  },
+  {
+    feature:    'Open-source',
+    zerosync:   { mark: 'yes', note: 'MIT + BSL 1.1' },
+    liveblocks: { mark: 'no' },
+    yjs:        { mark: 'yes', note: 'MIT' },
+    jazz:       { mark: 'yes', note: 'MPL-2.0' },
+  },
+  {
+    feature:    'React hooks',
+    zerosync:   { mark: 'yes' },
+    liveblocks: { mark: 'yes' },
+    yjs:        { mark: 'partial', note: 'community' },
+    jazz:       { mark: 'yes' },
+  },
 ]
 
-const markClass = (v: string) =>
-  v.startsWith('✓')
-    ? 'text-success font-medium'
-    : v.startsWith('✗')
-      ? 'text-neutral-600'
-      : v.startsWith('~')
-        ? 'text-neutral-400'
-        : 'text-neutral-300'
+const markSymbol = (m: Mark): string =>
+  m === 'yes' ? 'Yes' : m === 'no' ? 'No' : 'Partial'
+
+const markColor = (m: Mark, isZerosyncCol: boolean): string => {
+  if (isZerosyncCol && m === 'yes') return 'text-accent font-semibold'
+  if (m === 'yes')     return 'text-neutral-200 font-medium'
+  if (m === 'no')      return 'text-neutral-600'
+  return 'text-neutral-400'  // partial
+}
 ---
 
 <section class="px-6 py-24 border-t border-neutral-900" id="comparison">
@@ -41,25 +74,43 @@ const markClass = (v: string) =>
     </p>
 
     <div class="overflow-x-auto -mx-6 sm:mx-0">
-      <div class="min-w-[720px] px-6 sm:px-0">
+      <div class="min-w-[680px] px-6 sm:px-0">
         <table class="w-full border-collapse text-sm">
           <thead>
-            <tr class="border-b border-neutral-800">
-              <th class="text-left font-semibold text-neutral-400 py-4 pr-4 w-1/4"></th>
-              <th class="text-left font-semibold text-accent py-4 px-4 w-1/5">ZeroSync</th>
-              <th class="text-left font-semibold text-neutral-300 py-4 px-4 w-1/5">Liveblocks</th>
-              <th class="text-left font-semibold text-neutral-300 py-4 px-4 w-1/5">Yjs + y-websocket</th>
-              <th class="text-left font-semibold text-neutral-300 py-4 px-4 w-1/5">Jazz.tools</th>
+            <tr>
+              <th class="text-left font-medium text-neutral-500 py-4 pr-4 w-1/4 border-b border-neutral-800"></th>
+              <th class="text-left font-bold text-accent py-4 px-4 w-1/5 border-b-2 border-accent bg-accent/5 rounded-t-md">
+                ZeroSync
+              </th>
+              <th class="text-left font-medium text-neutral-300 py-4 px-4 w-1/5 border-b border-neutral-800">Liveblocks</th>
+              <th class="text-left font-medium text-neutral-300 py-4 px-4 w-1/5 border-b border-neutral-800">Yjs + y-websocket</th>
+              <th class="text-left font-medium text-neutral-300 py-4 px-4 w-1/5 border-b border-neutral-800">Jazz.tools</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr class:list={['border-b border-neutral-900', i % 2 === 1 && 'bg-neutral-900/30']}>
-                <td class="py-3 pr-4 font-medium text-neutral-200">{row.feature}</td>
-                <td class:list={['py-3 px-4', markClass(row.zerosync)]}>{row.zerosync}</td>
-                <td class:list={['py-3 px-4', markClass(row.liveblocks)]}>{row.liveblocks}</td>
-                <td class:list={['py-3 px-4', markClass(row.yjs)]}>{row.yjs}</td>
-                <td class:list={['py-3 px-4', markClass(row.jazz)]}>{row.jazz}</td>
+            {rows.map((row) => (
+              <tr class="border-b border-neutral-900 hover:bg-neutral-900/30">
+                <td class="py-4 pr-4 font-medium text-neutral-200">{row.feature}</td>
+
+                <td class="py-4 px-4 bg-accent/5">
+                  <div class={markColor(row.zerosync.mark, true)}>{markSymbol(row.zerosync.mark)}</div>
+                  {row.zerosync.note && <div class="text-xs text-neutral-500 mt-0.5">{row.zerosync.note}</div>}
+                </td>
+
+                <td class="py-4 px-4">
+                  <div class={markColor(row.liveblocks.mark, false)}>{markSymbol(row.liveblocks.mark)}</div>
+                  {row.liveblocks.note && <div class="text-xs text-neutral-500 mt-0.5">{row.liveblocks.note}</div>}
+                </td>
+
+                <td class="py-4 px-4">
+                  <div class={markColor(row.yjs.mark, false)}>{markSymbol(row.yjs.mark)}</div>
+                  {row.yjs.note && <div class="text-xs text-neutral-500 mt-0.5">{row.yjs.note}</div>}
+                </td>
+
+                <td class="py-4 px-4">
+                  <div class={markColor(row.jazz.mark, false)}>{markSymbol(row.jazz.mark)}</div>
+                  {row.jazz.note && <div class="text-xs text-neutral-500 mt-0.5">{row.jazz.note}</div>}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -68,7 +119,3 @@ const markClass = (v: string) =>
     </div>
   </div>
 </section>
-
-<style>
-  .text-success { color: var(--color-success); }
-</style>

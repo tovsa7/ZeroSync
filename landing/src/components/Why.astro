@@ -7,8 +7,8 @@
 const items = [
   {
     title: 'Zero-knowledge server',
-    body: "Room keys live only in the browser. The server sees hashed identifiers and opaque ciphertext. Even under subpoena, there is nothing to disclose.",
-    icon: '<path d="M12 3L4 7v6c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V7l-8-4z" /><path d="M9 12l2 2 4-4" />',
+    body: "Room keys live only in the browser. The server sees hashed identifiers and opaque ciphertext — never plaintext data or encryption keys.",
+    icon: '<rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" />',
   },
   {
     title: 'Architecture supports regulated workflows',
@@ -46,7 +46,7 @@ const items = [
       {items.map(({ title, body, icon }) => (
         <li class="flex items-start gap-5">
           <div class="shrink-0 size-11 rounded-lg border border-neutral-800 bg-neutral-900/60 flex items-center justify-center text-accent">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
           </div>
           <div>
             <h3 class="text-lg font-semibold text-neutral-100 mb-1">{title}</h3>

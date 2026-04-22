@@ -10,7 +10,6 @@ interface Tier {
   yrNote:     string | null
   rooms:      string
   peers:      string
-  sla:        string
   features:   string[]
   cta:        { text: string; href: string }
   popular?:   boolean
@@ -24,7 +23,6 @@ const tiers: Tier[] = [
     yrNote:   null,
     rooms:    '5',
     peers:    '10 per room',
-    sla:      'GitHub Discussions',
     features: [
       'Full SDK + server',
       'Dev / test / evaluation',
@@ -40,7 +38,6 @@ const tiers: Tier[] = [
     yrNote:   '2 months free',
     rooms:    '100',
     peers:    '25 per room',
-    sla:      '3 business days',
     features: [
       'Production license',
       'Email support',
@@ -56,7 +53,6 @@ const tiers: Tier[] = [
     yrNote:   '2 months free',
     rooms:    '1,000',
     peers:    '50 per room',
-    sla:      '1 business day',
     features: [
       'TOM compliance template',
       'Private issue tracker',
@@ -73,7 +69,6 @@ const tiers: Tier[] = [
     yrNote:   'Custom contract',
     rooms:    'Unlimited',
     peers:    'Unlimited',
-    sla:      '4 business hours',
     features: [
       'Signed DPA + BAA',
       'Custom SLA',
@@ -140,10 +135,6 @@ const tiers: Tier[] = [
               <dt class="text-neutral-500">Peers</dt>
               <dd class="text-neutral-300 font-medium">{tier.peers}</dd>
             </div>
-            <div class="flex justify-between">
-              <dt class="text-neutral-500">Email SLA</dt>
-              <dd class="text-neutral-300 font-medium">{tier.sla}</dd>
-            </div>
           </dl>
 
           <ul class="flex-1 space-y-2 text-sm text-neutral-300 mb-6">
@@ -158,9 +149,9 @@ const tiers: Tier[] = [
           <a
             href={tier.cta.href}
             class:list={[
-              'block text-center px-4 py-2.5 rounded-lg font-medium text-sm transition-colors',
+              'block text-center px-4 py-2.5 rounded-lg font-medium text-sm',
               tier.popular
-                ? 'bg-accent text-neutral-950 hover:bg-accent-muted'
+                ? 'bg-accent text-neutral-950 hover:bg-accent-muted hover:text-neutral-950'
                 : 'border border-neutral-700 text-neutral-200 hover:border-accent hover:text-accent',
             ]}
           >

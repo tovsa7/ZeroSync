@@ -55,15 +55,13 @@ body {
   box-sizing: border-box;
 }
 
-/* Links — subtle underline on hover, never on resting */
+/* Links — inherit color by default, don't underline. Each component
+   defines its own hover behavior (a global a:hover rule would override
+   text colors on CTA buttons with bg-accent). */
 a {
   color: inherit;
   text-decoration: none;
-  transition: color 150ms ease, opacity 150ms ease;
-}
-
-a:hover {
-  color: var(--color-accent);
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease, opacity 150ms ease;
 }
 
 /* Headings — tight tracking */
