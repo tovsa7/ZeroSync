@@ -25,7 +25,7 @@ const {
 
 const siteUrl = 'https://tovsa7.github.io/ZeroSync/'
 const canonicalUrl = canonical ?? siteUrl
-const ogImage = new URL('og-image.png', Astro.site + Astro.url.pathname).href
+const ogImage = `${siteUrl}og-image.png`
 ---
 
 <!doctype html>
