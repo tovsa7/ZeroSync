@@ -64,7 +64,7 @@ support:
 ### §164.312(e)(1) — Transmission Security
 | Required implementation | ZeroSync support |
 |------------------------|------------------|
-| Guard against unauthorized access to ePHI transmitted over networks | Dual-layer encryption: AES-256-GCM application layer + DTLS-SRTP (WebRTC) or TLS 1.2+ (relay fallback). Server operators cannot intercept content even with access to TLS private keys. |
+| Guard against unauthorized access to ePHI transmitted over networks | Dual-layer encryption: AES-256-GCM application layer + DTLS-SRTP (WebRTC). Planned relay fallback will use TLS 1.2+ for opaque-ciphertext transit. Server operators cannot intercept content even with access to TLS private keys. |
 
 **Business Associate Agreement (BAA)**: because ZeroSync is self-hosted, the
 vendor (ZeroSync Labs) has no access to customer PHI and is not a HIPAA
@@ -89,8 +89,8 @@ first place. This goes beyond traditional "policy-based" minimization.
   past the client
 - Identifiers: hashed with SHA-256 before any logging
 - Presence data (user names, cursor positions): also end-to-end encrypted
-- Retention: bounded by code (30 s relay TTL, 30 d hashed-metadata log, no
-  content persistence)
+- Retention: bounded by code (30 d hashed-metadata log, no content
+  persistence; planned relay fallback will enforce 30 s TTL on transit blobs)
 
 ### Article 32 — Security of processing
 The pseudonymization and encryption of personal data, plus integrity and
@@ -103,7 +103,7 @@ confidentiality, are implemented as follows:
 | Confidentiality | AES-256-GCM + TLS (transport) + DTLS (WebRTC) |
 | Integrity | AEAD (authenticated encryption) — tampering detected and rejected |
 | Availability | Docker health checks, automatic restart, graceful shutdown, GC-based resource bounds |
-| Regular testing | 141 unit + property-based tests per release; CI runs tests on every push; OpenSSF Best Practices badge |
+| Regular testing | Comprehensive unit + property-based test suite per release; CI runs tests on every push; OpenSSF Best Practices badge |
 
 ### Articles 33–34 — Personal data breach notification
 Under GDPR Art. 34, breach notification to data subjects is required if the
@@ -158,7 +158,7 @@ The signaling server logs operational events for service-reliability purposes:
 |-----------|-------------|-----------|
 | Connection open/close | SHA-256-hashed client IP, SHA-256-hashed room/peer ID, timestamp | 30 days |
 | Room lifecycle (create, GC) | SHA-256-hashed room ID, peer count, timestamp | 30 days |
-| Relay blob transit | Size, timestamp (no content ever) | 30 days |
+| Relay blob transit *(planned)* | Size, timestamp (no content ever) | 30 days |
 | Authentication failures | Error code, SHA-256-hashed peer ID, timestamp | 30 days |
 
 Logs are written to the container's stderr and rotated by standard logging
@@ -170,7 +170,7 @@ Application-level audit logging is the customer's responsibility; the
 customer has access to all plaintext operations in-browser and can log them
 via their own backend.
 
-### Planned (Enterprise tier, H1 2027)
+### Planned (H1 2027)
 Per [ROADMAP](docs/ROADMAP.md) feature 6 — "Enterprise Audit Trail":
 
 - Client-side encrypted append-only event log
@@ -180,10 +180,10 @@ Per [ROADMAP](docs/ROADMAP.md) feature 6 — "Enterprise Audit Trail":
 - Merkle-tree integrity for tamper-evidence
 - Opt-in; requires `@tovsa7/zerosync-client` v0.3+ (TBD)
 
-Target release: **H1 2027**. Enterprise tier customers will be notified when
-available. No interim product action required — once shipped, customer
-integrates the `audit.ts` module; existing deployments continue working
-without change.
+Target release: **H1 2027**. Business tier and higher-tier customers will be
+notified when available. No interim product action required — once shipped,
+customer integrates the `audit.ts` module; existing deployments continue
+working without change.
 
 ---
 

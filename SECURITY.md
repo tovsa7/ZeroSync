@@ -29,8 +29,9 @@ You will receive a response within **72 hours**. If the issue is confirmed, we w
 
 ZeroSync is a zero-knowledge architecture. The signaling server:
 - Never holds encryption keys
-- Sees only opaque ciphertext in relay messages
+- Exchanges only signaling metadata between peers (ICE candidates, SDP) — user data flows directly between browsers
 - Logs only SHA-256 hashed room/peer IDs
+- Planned encrypted relay fallback (for strict NATs) will forward opaque ciphertext only — server still cannot decrypt
 
 **Cryptographic primitives:**
 - AES-256-GCM (data encryption, Web Crypto API)

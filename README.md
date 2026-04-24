@@ -21,7 +21,7 @@ Add Google Docs-style multi-user editing, presence, and chat to any web app — 
 - **Self-hosted** — run on your own Hetzner / AWS / bare metal via one Docker image. No vendor-cloud dependency.
 - **Open-source client** — MIT licensed, auditable, no proprietary crypto. Server is BSL 1.1 (free for dev/test, paid in production).
 - **Real React hooks** — `@tovsa7/zerosync-react` for declarative integration (`useYText`, `usePresence`, `useMyPresence` …). Works with Tiptap, CodeMirror, Quill via standard Yjs bindings.
-- **141+ tests** — property-based + integration. OpenSSF Best Practices badge. SLSA provenance on every npm release.
+- **Comprehensive test suite** — property-based + integration tests. OpenSSF Best Practices badge. SLSA provenance on every npm release.
 
 ## Use cases
 
@@ -112,20 +112,25 @@ room.leave()
 ## How it works
 
 ```
-Browser A                 ZeroSync Server              Browser B
-    │                           │                           │
-    ├── encrypt(data, key) ─────┤                           │
-    │                           │                           │
-    │◄══════════ WebRTC DataChannel (P2P) ════════════════►│
-    │                           │  relay fallback only      │
-    │                      ciphertext                       │
-    │                   (server cannot decrypt)             │
+        ╔═══════════════  AES-256-GCM ciphertext  ═══════════════╗
+        ▼                                                         ▼
+  ┌───────────┐                                             ┌───────────┐
+  │ Browser A │ ◄──────── WebRTC DataChannel (P2P) ────────►│ Browser B │
+  │   🔑      │                                             │   🔑      │
+  └─────┬─────┘                                             └─────┬─────┘
+        │                                                         │
+        │           signaling only (ICE / SDP)                    │
+        └────────────────► ┌──────────────────┐ ◄────────────────┘
+                           │  ZeroSync Server │
+                           │   no user data   │
+                           └──────────────────┘
 ```
 
-- **P2P by default** — peers connect directly via WebRTC DataChannel
-- **Relay fallback** — encrypted blobs only, server sees opaque ciphertext (max 64 KB, 30s TTL)
-- **Zero-knowledge server** — holds no keys, logs only SHA-256-hashed room / peer IDs
-- **Mutual peer auth** — AES-GCM challenge-response on DataChannel open proves both peers possess the room key without transmitting it
+- **P2P by default** — peers connect directly via WebRTC DataChannel. User data never touches the server.
+- **Signaling-only server** — exchanges ICE candidates / SDP between peers so they can find each other, then gets out of the way.
+- **Zero-knowledge server** — holds no keys, logs only SHA-256-hashed room / peer IDs.
+- **Mutual peer auth** — AES-GCM challenge-response on DataChannel open proves both peers possess the room key without transmitting it.
+- **Planned: encrypted relay fallback** — for strict NATs, a future TURN-like mode will forward opaque ciphertext through the server (which still cannot decrypt).
 
 Full threat model + disclosure process: [`SECURITY.md`](https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md) · Regulatory mappings (HIPAA §164.312, GDPR Art. 25/32/33/34, SOC 2 CC6): [`COMPLIANCE.md`](https://github.com/tovsa7/ZeroSync/blob/main/COMPLIANCE.md) · Security contact: [`.well-known/security.txt`](https://tovsa7.github.io/ZeroSync/.well-known/security.txt)
 
@@ -143,14 +148,15 @@ Full threat model + disclosure process: [`SECURITY.md`](https://github.com/tovsa
 
 ## Pricing
 
-| Tier | Price | Rooms × Peers | Email SLA |
-|------|-------|---------------|-----------|
+| Tier | Price | Rooms × Peers | Support |
+|------|-------|---------------|---------|
 | **Community** | Free | 5 × 10 | GitHub Discussions |
-| **Starter** | $149/mo or $1,490/yr | 100 × 25 | 3 business days |
-| **Business** | $599/mo or $5,990/yr | 1,000 × 50 | 1 business day |
-| **Enterprise** | From $25,000/yr | Unlimited | 4 business hours + custom SLA |
+| **Starter** | $149/mo or $1,490/yr | 100 × 25 | Email — [join waitlist](https://tally.so/r/ob0M4M) |
+| **Business** | $599/mo or $5,990/yr | 1,000 × 50 | Direct founder contact |
 
-Community tier is fully-featured for development and evaluation. Production use (commercial deployment) requires a paid tier. Contact [sales](mailto:contact.zerosync@proton.me) for Enterprise.
+Community tier is fully-featured for development and evaluation. Production deployments require a paid tier. Self-hosted only — no managed cloud.
+
+Need higher limits, custom SLA, or a signed DPA/BAA? Email [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) — you'll reach the author directly.
 
 ---
 
@@ -222,7 +228,7 @@ Full docs + Tiptap / CodeMirror / cursor-presence examples: [`packages/react/REA
 | Key derivation | HKDF-SHA-256 |
 | Server visibility | Hashed room/peer IDs and ICE candidates only |
 | Peer auth | AES-GCM challenge-response handshake on DataChannel open |
-| Relay blobs | Max 64 KB · TTL 30 s · opaque ciphertext |
+| Relay blobs (planned) | Max 64 KB · TTL 30 s · opaque ciphertext · future TURN-like fallback |
 | Third-party crypto | None — `crypto.subtle` only |
 
 The room key is derived client-side and never leaves the browser. Even under a court order, the server cannot provide document contents — it does not possess the keys.
@@ -254,7 +260,7 @@ Running ZeroSync in production? I'm actively working with design partners buildi
 
 Email [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) with a short description of your use case.
 
-Early-stage design partners get meaningful discounts in exchange for feedback and, optionally, a case study.
+Early-stage design partners get grandfathered pricing (today's rate locked in as standard prices rise) in exchange for feedback and, optionally, a case study.
 
 ---
 
