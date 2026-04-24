@@ -114,8 +114,12 @@ const base = import.meta.env.BASE_URL
     const mouse = { x: -9999, y: -9999 }
 
     function resize() {
-      W = canvas.width  = canvas.offsetWidth
-      H = canvas.height = canvas.offsetHeight
+      const dpr = window.devicePixelRatio || 1
+      W = canvas.offsetWidth
+      H = canvas.offsetHeight
+      canvas.width  = Math.round(W * dpr)
+      canvas.height = Math.round(H * dpr)
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     function rebuild() {
       nodes = []
