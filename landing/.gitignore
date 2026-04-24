@@ -22,3 +22,8 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# local-only pages (used to regenerate assets like OG image;
+# not meant to be deployed)
+src/pages/og-preview.astro
+src/pages/playground/
