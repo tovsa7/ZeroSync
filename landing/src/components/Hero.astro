@@ -30,17 +30,9 @@ const base = import.meta.env.BASE_URL
     <div class="flex flex-wrap gap-3 mb-6">
       <a
         href={`${base}demo/`}
-        class="group inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-accent text-neutral-950 font-semibold hover:bg-accent-muted hover:text-neutral-950"
+        class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-lg border border-accent/40 bg-accent/10 text-accent font-mono font-semibold text-base hover:border-accent hover:bg-accent/15 transition-colors"
       >
-        <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
-        </svg>
-        Try the live demo
-        <svg aria-hidden="true" class="size-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12" />
-          <polyline points="12 5 19 12 12 19" />
-        </svg>
+        ▶ Try the live demo
       </a>
       <a
         href="#pricing"
