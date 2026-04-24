@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro'
+const base = import.meta.env.BASE_URL
+---
+
+<Base title="404 — Page not found · ZeroSync" description="The page you're looking for doesn't exist. Navigate back to ZeroSync.">
+  <main class="min-h-screen flex items-center justify-center px-6 py-24">
+    <div class="max-w-xl text-center">
+      <div class="text-accent font-mono text-sm tracking-widest mb-4">404 — NOT FOUND</div>
+
+      <h1 class="text-5xl sm:text-6xl font-extrabold tracking-tight text-neutral-100 mb-5">
+        Nothing encrypted here.
+      </h1>
+
+      <p class="text-neutral-400 leading-relaxed mb-10">
+        The page you're looking for doesn't exist. Either it was moved, it never did, or
+        you followed a broken link.
+      </p>
+
+      <div class="flex flex-wrap gap-3 justify-center">
+        <a
+          href={base}
+          class="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-lg border border-accent/40 bg-accent/10 text-accent font-mono font-semibold text-base hover:border-accent hover:bg-accent/15 transition-colors"
+        >
+          ← Back to home
+        </a>
+        <a
+          href="https://github.com/tovsa7/ZeroSync"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-neutral-700 text-neutral-200 hover:border-accent hover:text-accent transition-colors"
+        >
+          GitHub
+        </a>
+      </div>
+    </div>
+  </main>
+</Base>
