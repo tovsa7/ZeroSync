@@ -1,30 +1,99 @@
 ---
 /**
- * ForCompanies.astro — design-partner CTA block.
+ * ForCompanies.astro — design-partner CTA.
+ * Structure: intro + 2×2 benefit grid + who-it-fits bar + CTA with visible email.
  */
+
+const benefits = [
+  {
+    title: 'Direct founder access',
+    body:  'Email goes straight to me — no support tiers, no tickets. You talk to the person who writes the code.',
+    icon:  '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />',
+  },
+  {
+    title: 'Priority on the roadmap',
+    body:  'Your use case shapes the next quarter. Needed features jump the queue — you see what ships because of you.',
+    icon:  '<circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" />',
+  },
+  {
+    title: 'Grandfathered pricing',
+    body:  "Today's rate stays locked in as standard prices rise. No surprise hikes when you scale your deployment.",
+    icon:  '<path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" />',
+  },
+  {
+    title: 'Hands-on deployment',
+    body:  'Pair-programming for self-hosted setup. TOM compliance template. We debug your NAT or WebRTC issues together.',
+    icon:  '<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />',
+  },
+]
+
+const goodFit = [
+  'Regulated industry (legal · therapy · fintech · enterprise R&D · EU regulated SaaS)',
+  'Comfortable with self-hosted deploy (Docker / Linux)',
+  'Launching or actively building E2E-sensitive collaboration',
+  'Willing to share real feedback (optional public case study)',
+]
 ---
 
 <section class="px-6 py-24 border-t border-neutral-900">
-  <div class="max-w-3xl mx-auto text-center">
-    <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-6">
-      Running ZeroSync in production?
-    </h2>
-    <p class="text-neutral-400 leading-relaxed mb-4 max-w-2xl mx-auto">
-      I'm actively working with design partners building HIPAA / GDPR-sensitive
-      collaboration apps. If you need a production license, direct support from
-      the maintainer, priority on feature requests, or help with self-hosted
-      deployment — let's talk.
-    </p>
-    <p class="text-sm text-neutral-500 mb-8 max-w-2xl mx-auto">
-      Early-stage design partners get meaningful discounts in exchange for
-      feedback and, optionally, a case study.
-    </p>
+  <div class="max-w-5xl mx-auto">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
+        Running ZeroSync in production?
+      </h2>
+      <p class="text-neutral-400 leading-relaxed max-w-2xl mx-auto">
+        I'm onboarding a small group of design partners — companies shipping
+        HIPAA / GDPR / privilege-sensitive collaboration. In exchange for deep
+        feedback, you get direct influence on the product and pricing that
+        stays friendly as you grow.
+      </p>
+    </div>
 
-    <a
-      href="mailto:contact.zerosync@proton.me?subject=ZeroSync%20design%20partner%20inquiry"
-      class="inline-flex items-center px-6 py-3 rounded-lg bg-accent text-neutral-950 font-semibold hover:bg-accent-muted hover:text-neutral-950"
-    >
-      Email contact.zerosync@proton.me
-    </a>
+    {/* Benefits grid */}
+    <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+      {benefits.map(({ title, body, icon }) => (
+        <li class="p-5 rounded-xl border border-neutral-800 bg-neutral-900/40 hover:border-neutral-700 transition-colors">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="shrink-0 size-9 rounded-lg border border-accent/30 bg-accent/5 flex items-center justify-center text-accent">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+            </div>
+            <h3 class="text-base font-semibold text-neutral-100">{title}</h3>
+          </div>
+          <p class="text-sm text-neutral-400 leading-relaxed">{body}</p>
+        </li>
+      ))}
+    </ul>
+
+    {/* Who fits */}
+    <div class="mb-10 p-5 rounded-xl border border-neutral-800 bg-neutral-900/20">
+      <div class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-3">
+        Ideal fit
+      </div>
+      <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm text-neutral-300">
+        {goodFit.map((item) => (
+          <li class="flex gap-2 items-start">
+            <svg aria-hidden="true" class="shrink-0 size-4 mt-0.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+
+    {/* CTA */}
+    <div class="text-center">
+      <a
+        href="mailto:contact.zerosync@proton.me?subject=ZeroSync%20design%20partner%20inquiry"
+        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-accent text-neutral-950 font-semibold hover:bg-accent-muted hover:text-neutral-950"
+      >
+        <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
+        </svg>
+        Email the author directly
+      </a>
+      <p class="mt-3 text-xs text-neutral-500 font-mono select-all">
+        contact.zerosync@proton.me
+      </p>
+    </div>
   </div>
 </section>

@@ -15,6 +15,8 @@ interface Tier {
   popular?:   boolean
 }
 
+const TALLY_STARTER_WAITLIST = 'https://tally.so/r/ob0M4M'
+
 const tiers: Tier[] = [
   {
     name:     'Community',
@@ -44,7 +46,7 @@ const tiers: Tier[] = [
       'All Community features',
       '12-month license term',
     ],
-    cta: { text: 'Contact sales', href: 'mailto:contact.zerosync@proton.me?subject=Starter%20tier' },
+    cta: { text: 'Join waitlist', href: TALLY_STARTER_WAITLIST },
   },
   {
     name:     'Business',
@@ -59,29 +61,14 @@ const tiers: Tier[] = [
       'All Starter features',
       'Production-scale ready',
     ],
-    cta: { text: 'Contact sales', href: 'mailto:contact.zerosync@proton.me?subject=Business%20tier' },
+    cta: { text: 'Contact us', href: 'mailto:contact.zerosync@proton.me?subject=Business%20tier%20inquiry' },
     popular: true,
-  },
-  {
-    name:     'Enterprise',
-    priceMo:  null,
-    priceYr:  'From $25,000/yr',
-    yrNote:   'Custom contract',
-    rooms:    'Unlimited',
-    peers:    'Unlimited',
-    features: [
-      'Signed DPA + BAA',
-      'Custom SLA',
-      'Quarterly founder sync',
-      'Priority roadmap input',
-    ],
-    cta: { text: 'Talk to us', href: 'mailto:contact.zerosync@proton.me?subject=Enterprise%20inquiry' },
   },
 ]
 ---
 
 <section class="px-6 py-24 border-t border-neutral-900" id="pricing">
-  <div class="max-w-6xl mx-auto">
+  <div class="max-w-5xl mx-auto">
     <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
       Pricing
     </h2>
@@ -90,8 +77,11 @@ const tiers: Tier[] = [
       paid in production).
     </p>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {tiers.map((tier) => (
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {tiers.map((tier) => {
+        const tallyMatch = tier.cta.href.match(/tally\.so\/r\/([A-Za-z0-9]+)/)
+        const tallyId    = tallyMatch ? tallyMatch[1] : null
+        return (
         <article
           class:list={[
             'relative flex flex-col p-6 rounded-xl border transition-colors',
@@ -148,6 +138,11 @@ const tiers: Tier[] = [
 
           <a
             href={tier.cta.href}
+            target={tier.cta.href.startsWith('http') && !tallyId ? '_blank' : undefined}
+            rel={tier.cta.href.startsWith('http') && !tallyId ? 'noopener' : undefined}
+            data-tally-open={tallyId ?? undefined}
+            data-tally-layout={tallyId ? 'modal' : undefined}
+            data-tally-width={tallyId ? '600' : undefined}
             class:list={[
               'block text-center px-4 py-2.5 rounded-lg font-medium text-sm',
               tier.popular
@@ -157,14 +152,25 @@ const tiers: Tier[] = [
           >
             {tier.cta.text}
           </a>
+          {tier.cta.href.startsWith('mailto:') && (
+            <p class="mt-2 text-center text-xs text-neutral-500 font-mono select-all">
+              contact.zerosync@proton.me
+            </p>
+          )}
         </article>
-      ))}
+        )
+      })}
     </div>
 
     <p class="mt-10 text-sm text-neutral-500 max-w-3xl">
       Community tier is fully-featured for development and evaluation. Production deployments
       require a paid tier. Self-hosted only — no managed cloud (by design — the server sees
       only ciphertext, so a managed cloud wouldn't add value over your own).
+    </p>
+
+    <p class="mt-4 text-sm text-neutral-500 max-w-3xl">
+      Need higher limits, custom SLA, or a signed DPA/BAA?
+      {' '}<a href="mailto:contact.zerosync@proton.me?subject=Custom%20terms%20inquiry" class="text-accent hover:underline">Email contact.zerosync@proton.me</a> — you'll reach the author directly.
     </p>
   </div>
 </section>

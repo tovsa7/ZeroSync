@@ -72,40 +72,53 @@ room.leave()`
       Minimal working example in 30 lines. Pick your stack.
     </p>
 
-    {/* Pure-CSS tabs via hidden radio buttons */}
-    <div class="tabs">
-      <input type="radio" name="qs-tabs" id="qs-react"   class="sr-only peer/react" checked />
-      <input type="radio" name="qs-tabs" id="qs-vanilla" class="sr-only peer/vanilla" />
+    {/* Pure-CSS tabs — radios drive state, :has() drives styling */}
+    <div class="qs-tabs">
+      <input type="radio" name="qs-tabs" id="qs-react"   class="sr-only" checked />
+      <input type="radio" name="qs-tabs" id="qs-vanilla" class="sr-only" />
 
-      <div class="flex gap-1 mb-5 border-b border-neutral-800" role="tablist">
-        <label
-          for="qs-react"
-          class="cursor-pointer px-4 py-2.5 text-sm font-medium text-neutral-400 border-b-2 border-transparent hover:text-neutral-200 peer-checked/react:text-accent peer-checked/react:border-accent transition-colors"
-          role="tab"
-        >
-          React
-        </label>
-        <label
-          for="qs-vanilla"
-          class="cursor-pointer px-4 py-2.5 text-sm font-medium text-neutral-400 border-b-2 border-transparent hover:text-neutral-200 peer-checked/vanilla:text-accent peer-checked/vanilla:border-accent transition-colors"
-          role="tab"
-        >
-          Vanilla SDK
-        </label>
+      <div class="inline-flex p-1 mb-5 rounded-lg border border-neutral-800 bg-neutral-900/60" role="tablist">
+        <label for="qs-react"   data-qs-tab="react"   role="tab" class="qs-tab">React</label>
+        <label for="qs-vanilla" data-qs-tab="vanilla" role="tab" class="qs-tab">Vanilla SDK</label>
       </div>
 
-      {/* React pane */}
-      <div class="hidden peer-checked/react:block" role="tabpanel">
+      <div data-qs-pane="react" role="tabpanel">
         <pre class="mb-4 text-sm text-neutral-400"><code>npm install @tovsa7/zerosync-react @tovsa7/zerosync-client react yjs</code></pre>
         <Code code={reactCode} lang="tsx" theme="github-dark" />
       </div>
 
-      {/* Vanilla pane */}
-      <div class="hidden peer-checked/vanilla:block" role="tabpanel">
+      <div data-qs-pane="vanilla" role="tabpanel">
         <pre class="mb-4 text-sm text-neutral-400"><code>npm install @tovsa7/zerosync-client yjs</code></pre>
         <Code code={vanillaCode} lang="typescript" theme="github-dark" />
       </div>
     </div>
+
+    <style>
+      .qs-tab {
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 0.375rem;
+        color: #a3a3a3;
+        transition: background-color 150ms, color 150ms;
+      }
+      .qs-tab:hover { color: #f5f5f5; }
+
+      .qs-tabs [data-qs-pane] { display: none; }
+
+      .qs-tabs:has(#qs-react:checked)   [data-qs-tab="react"],
+      .qs-tabs:has(#qs-vanilla:checked) [data-qs-tab="vanilla"] {
+        background: var(--color-accent);
+        color: #0a0a0b;
+        font-weight: 600;
+      }
+
+      .qs-tabs:has(#qs-react:checked)   [data-qs-pane="react"],
+      .qs-tabs:has(#qs-vanilla:checked) [data-qs-pane="vanilla"] {
+        display: block;
+      }
+    </style>
 
     <p class="mt-6 text-sm text-neutral-500">
       See the

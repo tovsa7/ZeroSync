@@ -42,6 +42,30 @@ const ogImage = new URL('og-image.png', Astro.site + Astro.url.pathname).href
     {/* Favicon */}
     <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
 
+    {/* Scroll-reveal: mark <html> before paint so initial-hidden CSS applies
+        without flash. Without JS → class never added → content visible by default. */}
+    <script is:inline>
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('js-reveal')
+      }
+    </script>
+    <style is:global>
+      html.js-reveal section .grid > *,
+      html.js-reveal section details,
+      html.js-reveal section > div > article {
+        opacity: 0;
+        transform: translateY(14px);
+        transition: opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+                    transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      html.js-reveal section .grid > .revealed,
+      html.js-reveal section details.revealed,
+      html.js-reveal section > div > article.revealed {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    </style>
+
     {/* Open Graph */}
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
@@ -55,6 +79,9 @@ const ogImage = new URL('og-image.png', Astro.site + Astro.url.pathname).href
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+
+    {/* Tally embed — opens forms in modal on click */}
+    <script async src="https://tally.so/widgets/embed.js"></script>
 
     {/* JSON-LD — SoftwareApplication schema */}
     <script type="application/ld+json" set:html={JSON.stringify({
@@ -70,11 +97,27 @@ const ogImage = new URL('og-image.png', Astro.site + Astro.url.pathname).href
         { '@type': 'Offer', name: 'Community', price: '0',    priceCurrency: 'USD' },
         { '@type': 'Offer', name: 'Starter',   price: '149',  priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
         { '@type': 'Offer', name: 'Business',  price: '599',  priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
-        { '@type': 'Offer', name: 'Enterprise', price: '25000', priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'ANN' } },
       ],
     })} />
   </head>
   <body>
     <slot />
+
+    {/* Scroll-reveal observer — promotes .revealed on elements entering viewport */}
+    <script is:inline>
+      (function () {
+        if (!document.documentElement.classList.contains('js-reveal')) return
+        const targets = document.querySelectorAll('section .grid > *, section details, section > div > article')
+        const obs = new IntersectionObserver((entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('revealed')
+              observer.unobserve(entry.target)
+            }
+          })
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' })
+        targets.forEach((el) => obs.observe(el))
+      })()
+    </script>
   </body>
 </html>

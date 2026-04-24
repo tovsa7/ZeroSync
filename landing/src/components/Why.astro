@@ -1,34 +1,36 @@
 ---
 /**
- * Why.astro — 5 value bullets with simple icons.
- * Icons are minimal line-art SVGs, monochrome.
+ * Why.astro — hero featured card (zero-knowledge) + 2×2 grid of supporting
+ * value props. Zero-knowledge is the strongest differentiator, so it gets
+ * visual prominence and a link to the architecture section below.
  */
+
+const featured = {
+  title: 'Zero-knowledge server',
+  body:  'Room keys live only in the browser. The server sees hashed identifiers and opaque ciphertext — never plaintext data or encryption keys.',
+  icon:  '<rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" />',
+}
 
 const items = [
   {
-    title: 'Zero-knowledge server',
-    body: "Room keys live only in the browser. The server sees hashed identifiers and opaque ciphertext — never plaintext data or encryption keys.",
-    icon: '<rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" />',
-  },
-  {
     title: 'Architecture supports regulated workflows',
-    body: "HIPAA technical safeguards, attorney-client privilege, GDPR data-minimization by design. Not certified — architecture enables your own compliance program.",
-    icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="13" x2="15" y2="13" /><line x1="9" y1="17" x2="15" y2="17" />',
+    body:  'HIPAA technical safeguards, attorney-client privilege, GDPR data-minimization by design. Not certified — architecture enables your own compliance program.',
+    icon:  '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="9" y1="13" x2="15" y2="13" /><line x1="9" y1="17" x2="15" y2="17" />',
   },
   {
     title: 'Self-hosted',
-    body: "Run on your own Hetzner / AWS / bare metal via one Docker image. No vendor-cloud dependency. License is BSL 1.1 (free for dev, paid in production).",
-    icon: '<rect x="2" y="6" width="20" height="12" rx="2" /><line x1="7" y1="12" x2="7.01" y2="12" /><line x1="12" y1="12" x2="12.01" y2="12" /><line x1="17" y1="12" x2="17.01" y2="12" />',
+    body:  'Run on your own Hetzner / AWS / bare metal via one Docker image. No vendor-cloud dependency. License is BSL 1.1 (free for dev, paid in production).',
+    icon:  '<rect x="2" y="6" width="20" height="12" rx="2" /><line x1="7" y1="12" x2="7.01" y2="12" /><line x1="12" y1="12" x2="12.01" y2="12" /><line x1="17" y1="12" x2="17.01" y2="12" />',
   },
   {
     title: 'Open-source client, auditable crypto',
-    body: "MIT-licensed client SDK. Web Crypto API only — no third-party crypto libraries. 141 tests including property-based tests via fast-check. SLSA provenance on every release.",
-    icon: '<polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />',
+    body:  'MIT-licensed client SDK. Web Crypto API only — no third-party crypto libraries. Property-based tests via fast-check. SLSA provenance on every release.',
+    icon:  '<polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" />',
   },
   {
     title: 'Real React hooks',
-    body: 'Companion package @tovsa7/zerosync-react — useYText, usePresence, useMyPresence, useConnectionStatus. Works with Tiptap, CodeMirror, Quill via standard Yjs bindings.',
-    icon: '<circle cx="12" cy="12" r="3" /><path d="M12 2a10 10 0 0110 10c0 5-5 10-10 10" /><path d="M2 12a10 10 0 0110-10" />',
+    body:  'Companion package @tovsa7/zerosync-react — useYText, usePresence, useMyPresence, useConnectionStatus. Works with Tiptap, CodeMirror, Quill via standard Yjs bindings.',
+    icon:  '<circle cx="12" cy="12" r="3" /><path d="M12 2a10 10 0 0110 10c0 5-5 10-10 10" /><path d="M2 12a10 10 0 0110-10" />',
   },
 ]
 ---
@@ -38,20 +40,44 @@ const items = [
     <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
       Why ZeroSync
     </h2>
-    <p class="text-neutral-400 mb-12 max-w-2xl">
+    <p class="text-neutral-400 mb-10 max-w-2xl">
       Zero-knowledge by architecture, not by promise.
     </p>
 
-    <ul class="grid gap-8 sm:gap-10">
+    {/* Featured hero card — main differentiator */}
+    <article class="mb-5 p-6 sm:p-7 rounded-xl border border-accent/30 bg-accent/5 hover:border-accent/50 transition-colors">
+      <div class="flex flex-col sm:flex-row items-start gap-5">
+        <div class="shrink-0 size-14 rounded-lg border border-accent/40 bg-accent/10 flex items-center justify-center text-accent">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={featured.icon} />
+        </div>
+        <div class="flex-1">
+          <h3 class="text-xl font-bold text-neutral-100 mb-2">{featured.title}</h3>
+          <p class="text-neutral-300 leading-relaxed mb-3">{featured.body}</p>
+          <a
+            href="#how-it-works"
+            class="group inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
+          >
+            See the architecture
+            <svg aria-hidden="true" class="size-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </article>
+
+    {/* Supporting 2×2 grid */}
+    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {items.map(({ title, body, icon }) => (
-        <li class="flex items-start gap-5">
-          <div class="shrink-0 size-11 rounded-lg border border-neutral-800 bg-neutral-900/60 flex items-center justify-center text-accent">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+        <li class="p-5 rounded-xl border border-neutral-800 bg-neutral-900/40 hover:border-neutral-700 transition-colors">
+          <div class="flex items-center gap-3 mb-2">
+            <div class="shrink-0 size-9 rounded-lg border border-neutral-800 bg-neutral-900/60 flex items-center justify-center text-accent">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+            </div>
+            <h3 class="text-base font-semibold text-neutral-100">{title}</h3>
           </div>
-          <div>
-            <h3 class="text-lg font-semibold text-neutral-100 mb-1">{title}</h3>
-            <p class="text-neutral-400 leading-relaxed">{body}</p>
-          </div>
+          <p class="text-sm text-neutral-400 leading-relaxed">{body}</p>
         </li>
       ))}
     </ul>

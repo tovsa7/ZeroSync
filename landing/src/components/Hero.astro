@@ -6,13 +6,9 @@
 const base = import.meta.env.BASE_URL
 ---
 
-<section class="relative min-h-screen flex items-center px-6 py-24 overflow-hidden">
-  {/* Soft radial accent in background */}
-  <div
-    aria-hidden="true"
-    class="absolute inset-0 opacity-30 pointer-events-none"
-    style="background: radial-gradient(ellipse 60% 50% at 50% 30%, rgba(94, 234, 212, 0.15), transparent 60%);"
-  />
+<section id="hero" class="relative min-h-screen flex items-center px-6 py-24 overflow-hidden">
+  {/* Interactive connected-nodes background (cursor repels, graph springs back) */}
+  <canvas id="hero-bg" class="hero-bg absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true"></canvas>
 
   <div class="relative max-w-5xl mx-auto w-full">
     <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-neutral-100 mb-6 max-w-4xl">
@@ -31,12 +27,20 @@ const base = import.meta.env.BASE_URL
       AES-256-GCM via the browser's native Web Crypto API.
     </p>
 
-    <div class="flex flex-wrap gap-3 mb-16">
+    <div class="flex flex-wrap gap-3 mb-6">
       <a
         href={`${base}demo/`}
-        class="inline-flex items-center px-6 py-3 rounded-lg bg-accent text-neutral-950 font-semibold hover:bg-accent-muted hover:text-neutral-950"
+        class="group inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-accent text-neutral-950 font-semibold hover:bg-accent-muted hover:text-neutral-950"
       >
-        Try the demo
+        <svg aria-hidden="true" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+        </svg>
+        Try the live demo
+        <svg aria-hidden="true" class="size-4 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
       </a>
       <a
         href="#pricing"
@@ -53,16 +57,152 @@ const base = import.meta.env.BASE_URL
       </a>
     </div>
 
-    {/* Simple architecture diagram */}
-    <div class="max-w-3xl">
-      <pre class="text-xs sm:text-sm text-neutral-500 leading-relaxed"><code>{`Browser A          ZeroSync Server          Browser B
-    │                    │                       │
-    ├── encrypt(data) ───┤                       │
-    │                    │                       │
-    │◄═══════ WebRTC (P2P) or encrypted relay ══►│
-    │                    │                       │
-    │               ciphertext only              │
-    │          (server cannot decrypt)           │`}</code></pre>
-    </div>
+    <p class="text-xs text-neutral-500 font-mono">
+      MIT client · BSL 1.1 server · Self-hosted in one Docker command
+    </p>
   </div>
 </section>
+
+<style>
+  /* Fade the canvas where the hero text sits so nodes don't compete with reading */
+  .hero-bg {
+    -webkit-mask-image: radial-gradient(
+      ellipse 55% 40% at 35% 50%,
+      transparent 5%,
+      rgba(0, 0, 0, 0.25) 42%,
+      rgba(0, 0, 0, 0.75) 70%,
+      #000 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 55% 40% at 35% 50%,
+      transparent 5%,
+      rgba(0, 0, 0, 0.25) 42%,
+      rgba(0, 0, 0, 0.75) 70%,
+      #000 100%
+    );
+  }
+
+  @media (max-width: 640px) {
+    .hero-bg {
+      -webkit-mask-image: radial-gradient(
+        ellipse 80% 55% at 50% 50%,
+        transparent 5%,
+        rgba(0, 0, 0, 0.25) 45%,
+        rgba(0, 0, 0, 0.75) 75%,
+        #000 100%
+      );
+      mask-image: radial-gradient(
+        ellipse 80% 55% at 50% 50%,
+        transparent 5%,
+        rgba(0, 0, 0, 0.25) 45%,
+        rgba(0, 0, 0, 0.75) 75%,
+        #000 100%
+      );
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    const canvas = document.getElementById('hero-bg')
+    if (!canvas) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    const ctx     = canvas.getContext('2d')
+    const section = canvas.parentElement
+    const TEAL    = '94, 234, 212'
+
+    const MAX_DIST     = 170
+    const REPEL_RADIUS = 180
+    const REPEL_FORCE  = 0.55
+    const HOME_SPRING  = 0.012
+    const DAMPING      = 0.945
+
+    let W = 0, H = 0, nodes = [], active = true
+    const mouse = { x: -9999, y: -9999 }
+
+    function resize() {
+      W = canvas.width  = canvas.offsetWidth
+      H = canvas.height = canvas.offsetHeight
+    }
+    function rebuild() {
+      nodes = []
+      // Density scales with viewport — phone ~95, desktop ~160+
+      const count = Math.max(60, Math.min(200, Math.round(Math.sqrt(W * H) * 0.17)))
+      for (let i = 0; i < count; i++) {
+        const x = Math.random() * W
+        const y = Math.random() * H
+        nodes.push({
+          x, y, hx: x, hy: y,
+          vx: 0, vy: 0,
+          phase:  Math.random() * Math.PI * 2,
+          speedA: 0.0007 + Math.random() * 0.0008,
+          speedB: 0.0009 + Math.random() * 0.001,
+          ampA:   0.6   + Math.random() * 0.7,
+          ampB:   0.5   + Math.random() * 0.6,
+        })
+      }
+    }
+
+    section.addEventListener('mousemove', (e) => {
+      const r = canvas.getBoundingClientRect()
+      mouse.x = e.clientX - r.left
+      mouse.y = e.clientY - r.top
+    })
+    section.addEventListener('mouseleave', () => { mouse.x = mouse.y = -9999 })
+
+    new IntersectionObserver(([e]) => { active = e.isIntersecting }, { threshold: 0 }).observe(canvas)
+    window.addEventListener('resize', () => { resize(); rebuild() })
+
+    resize(); rebuild()
+
+    function tick(now) {
+      if (active) {
+        const t = now
+        ctx.clearRect(0, 0, W, H)
+
+        for (const n of nodes) {
+          const dx = n.x - mouse.x, dy = n.y - mouse.y
+          const d  = Math.hypot(dx, dy)
+          if (d < REPEL_RADIUS && d > 0) {
+            const k = 1 - d / REPEL_RADIUS
+            const f = k * k * REPEL_FORCE
+            n.vx += (dx / d) * f
+            n.vy += (dy / d) * f
+          }
+          n.vx += (n.hx - n.x) * HOME_SPRING
+          n.vy += (n.hy - n.y) * HOME_SPRING
+          n.vx += Math.sin(t * n.speedA + n.phase)       * n.ampA * 0.04
+          n.vy += Math.cos(t * n.speedB + n.phase * 1.3) * n.ampB * 0.04
+          n.vx *= DAMPING
+          n.vy *= DAMPING
+          n.x  += n.vx
+          n.y  += n.vy
+        }
+
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const a = nodes[i], b = nodes[j]
+            const d = Math.hypot(a.x - b.x, a.y - b.y)
+            if (d < MAX_DIST) {
+              const k = 1 - d / MAX_DIST
+              ctx.strokeStyle = 'rgba(' + TEAL + ', ' + (k * k * 0.55) + ')'
+              ctx.lineWidth   = 0.8
+              ctx.beginPath()
+              ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y)
+              ctx.stroke()
+            }
+          }
+        }
+        for (const n of nodes) {
+          ctx.fillStyle = 'rgba(' + TEAL + ', 0.82)'
+          ctx.beginPath()
+          ctx.arc(n.x, n.y, 1.8, 0, Math.PI * 2)
+          ctx.fill()
+        }
+      }
+      requestAnimationFrame(tick)
+    }
+    requestAnimationFrame(tick)
+  })()
+</script>

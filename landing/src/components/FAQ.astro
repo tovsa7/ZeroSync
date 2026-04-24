@@ -1,0 +1,85 @@
+---
+/**
+ * FAQ.astro — pre-sales objection handling via native <details>/<summary>
+ * (no JS). Questions chosen for the regulated-industry CTO persona.
+ */
+
+const faqs = [
+  {
+    q: 'Why E2E when I already have TLS?',
+    a: "TLS protects data in transit between client and server. End-to-end encryption protects data across the server — even if your infrastructure is compromised, the server itself sees only ciphertext. For regulated workflows, this moves compliance from vendor trust to architectural guarantee.",
+  },
+  {
+    q: 'Is the cryptography audited?',
+    a: "Not yet by a third party — independent audit is on the roadmap. Today: the client SDK uses only standard Web Crypto API primitives (AES-256-GCM, SHA-256, ECDH) — no custom crypto to audit. Source is MIT and fully open; the test suite includes property-based tests via fast-check.",
+  },
+  {
+    q: "What's the latency overhead vs plain Yjs?",
+    a: "In P2P mode: one AES-256-GCM encrypt and one decrypt per update. On modern hardware this measures at roughly 0.1 ms per update for typical collaborative document sizes — negligible next to the network round-trip Yjs already does over WebRTC DataChannel.",
+  },
+  {
+    q: "HIPAA / GDPR — what's actually included?",
+    a: "Architecture supports both. HIPAA §164.312: encryption in transit and at rest (client-side). GDPR Art. 25 / 32: data minimization by design — server holds no personal data, only hashed room / peer IDs. ZeroSync itself is not certified — COMPLIANCE.md maps each technical safeguard to the code path that implements it so your own compliance program can reference it directly.",
+  },
+  {
+    q: 'Can I get a signed BAA or DPA?',
+    a: "Signed BAAs are possible on Business and Enterprise engagements. A DPA template is available on request. Design-partner engagements can include either during the partnership.",
+  },
+  {
+    q: 'Mobile support?',
+    a: "React Native and native iOS / Android SDKs are on the roadmap. Today the client works in mobile browsers (Safari on iOS, Chrome on Android) and inside any WebView via Capacitor or Cordova — hybrid apps work out of the box.",
+  },
+  {
+    q: "Is ZeroSync production-ready? What's the bus factor?",
+    a: "Client SDK is published to npm with SLSA provenance on every release and a comprehensive test suite (including property-based tests). Signaling server is deployed and runs via Docker on any Linux host. License-management server and independent audit are the remaining milestones. Bus factor: solo maintainer today — but the MIT client and source-available BSL 1.1 server mean you can fork, patch, and self-support if needed. No vendor lock-in.",
+  },
+]
+---
+
+<section class="px-6 py-24 border-t border-neutral-900" id="faq">
+  <div class="max-w-3xl mx-auto">
+    <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
+      Frequently asked questions
+    </h2>
+    <p class="text-neutral-400 mb-10 max-w-2xl">
+      Questions I get from security-conscious CTOs during evaluation.
+    </p>
+
+    <div class="space-y-3">
+      {faqs.map(({ q, a }) => (
+        <details class="group rounded-xl border border-neutral-800 bg-neutral-900/40 hover:border-neutral-700 transition-colors">
+          <summary class="faq-summary cursor-pointer list-none px-5 py-4 flex items-center justify-between gap-4">
+            <span class="font-medium text-neutral-100">{q}</span>
+            <svg
+              aria-hidden="true"
+              class="shrink-0 size-5 text-neutral-500 group-open:rotate-45 group-open:text-accent transition-transform"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </summary>
+          <div class="px-5 pb-5 text-sm text-neutral-400 leading-relaxed">
+            {a}
+          </div>
+        </details>
+      ))}
+    </div>
+
+    <p class="mt-10 text-sm text-neutral-500 text-center">
+      Didn't find your question?
+      {' '}<a href="mailto:contact.zerosync@proton.me?subject=ZeroSync%20question" class="text-accent hover:underline">Email me directly</a>.
+    </p>
+  </div>
+</section>
+
+<style>
+  /* Hide native details marker across browsers */
+  .faq-summary::-webkit-details-marker { display: none; }
+  .faq-summary::marker { content: ''; }
+</style>

@@ -1,28 +1,45 @@
 ---
 /**
- * UseCases.astro — 5 industry cards grid.
+ * UseCases.astro — 5 industry cards with icons, compliance anchors,
+ * and a short "like X, but..." analogy that helps readers map ZeroSync
+ * to their own product mental model.
  */
 
 const cases = [
   {
-    label: 'Legal tech',
-    body:  "Privileged attorney-client work, live document redlines, e-signing ceremonies with witnesses.",
+    label:      'Legal tech',
+    body:       'Privileged attorney-client work, live document redlines, e-signing ceremonies with witnesses.',
+    compliance: 'Attorney-client privilege',
+    analogy:    'Like Notion for law firms — privilege guaranteed by architecture, not policy.',
+    icon:       '<rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />',
   },
   {
-    label: 'Mental health / therapy',
-    body:  "Therapist-client sessions with notes, homework, and chat that the platform itself cannot see.",
+    label:      'Mental health / therapy',
+    body:       'Therapist-client sessions with notes, homework, and chat that the platform itself cannot see.',
+    compliance: 'HIPAA §164.312',
+    analogy:    'Like SimplePractice, but the vendor cannot read a single session.',
+    icon:       '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />',
   },
   {
-    label: 'Finance / fintech',
-    body:  "Token deal rooms, M&A data rooms, OTC trading desk coordination, private equity deal flow.",
+    label:      'Finance / fintech',
+    body:       'Token deal rooms, M&A data rooms, OTC trading desk coordination, private equity deal flow.',
+    compliance: 'Data-room grade',
+    analogy:    'Like a VDR, but self-hosted and zero-knowledge end to end.',
+    icon:       '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" />',
   },
   {
-    label: 'Enterprise R&D',
-    body:  "Cross-team collaboration on IP, patents, regulatory filings, trade secrets.",
+    label:      'Enterprise R&D',
+    body:       'Cross-team collaboration on IP, patents, regulatory filings, and trade secrets.',
+    compliance: 'Trade-secret protection',
+    analogy:    'Like Confluence, but for material that must not leave your premises.',
+    icon:       '<rect x="4" y="2" width="16" height="20" rx="2" /><path d="M9 22v-4h6v4" /><circle cx="8" cy="7" r="0.5" fill="currentColor" /><circle cx="12" cy="7" r="0.5" fill="currentColor" /><circle cx="16" cy="7" r="0.5" fill="currentColor" /><circle cx="8" cy="11" r="0.5" fill="currentColor" /><circle cx="12" cy="11" r="0.5" fill="currentColor" /><circle cx="16" cy="11" r="0.5" fill="currentColor" /><circle cx="8" cy="15" r="0.5" fill="currentColor" /><circle cx="12" cy="15" r="0.5" fill="currentColor" /><circle cx="16" cy="15" r="0.5" fill="currentColor" />',
   },
   {
-    label: 'Regulated SaaS with EU customers',
-    body:  "A DPA-grade architecture you can point at during procurement.",
+    label:      'Regulated SaaS with EU customers',
+    body:       'A DPA-grade architecture you can point at during procurement and security reviews.',
+    compliance: 'GDPR Art. 28 / 32',
+    analogy:    'Like Liveblocks, but EU procurement-ready out of the box.',
+    icon:       '<circle cx="12" cy="12" r="10" /><path d="M2 12h20" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />',
   },
 ]
 ---
@@ -38,10 +55,22 @@ const cases = [
     </p>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {cases.map(({ label, body }) => (
-        <article class="p-6 rounded-xl border border-neutral-800 bg-neutral-900/40 hover:border-neutral-700 hover:bg-neutral-900/80 transition-colors">
-          <h3 class="text-base font-semibold text-neutral-100 mb-2">{label}</h3>
-          <p class="text-sm text-neutral-400 leading-relaxed">{body}</p>
+      {cases.map(({ label, body, compliance, analogy, icon }) => (
+        <article class="flex flex-col p-5 rounded-xl border border-neutral-800 bg-neutral-900/40 hover:border-neutral-700 hover:bg-neutral-900/80 transition-colors">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="shrink-0 size-9 rounded-lg border border-neutral-800 bg-neutral-900/60 flex items-center justify-center text-accent">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" set:html={icon} />
+            </div>
+            <h3 class="text-base font-semibold text-neutral-100 leading-tight">{label}</h3>
+          </div>
+
+          <p class="text-sm text-neutral-400 leading-relaxed mb-4 flex-1">{body}</p>
+
+          <span class="self-start inline-block px-2 py-0.5 mb-3 rounded-md text-[11px] font-mono text-accent bg-accent/10 border border-accent/20">
+            {compliance}
+          </span>
+
+          <p class="text-xs text-neutral-500 italic leading-snug">{analogy}</p>
         </article>
       ))}
     </div>

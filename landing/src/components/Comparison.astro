@@ -53,15 +53,15 @@ const rows: Row[] = [
   },
 ]
 
-const markSymbol = (m: Mark): string =>
-  m === 'yes' ? 'Yes' : m === 'no' ? 'No' : 'Partial'
-
 const markColor = (m: Mark, isZerosyncCol: boolean): string => {
-  if (isZerosyncCol && m === 'yes') return 'text-accent font-semibold'
-  if (m === 'yes')     return 'text-neutral-200 font-medium'
-  if (m === 'no')      return 'text-neutral-600'
+  if (isZerosyncCol && m === 'yes') return 'text-accent'
+  if (m === 'yes')     return 'text-neutral-200'
+  if (m === 'no')      return 'text-neutral-700'
   return 'text-neutral-400'  // partial
 }
+
+const markLabel = (m: Mark): string =>
+  m === 'yes' ? 'Yes' : m === 'no' ? 'No' : 'Partial'
 ---
 
 <section class="px-6 py-24 border-t border-neutral-900" id="comparison">
@@ -93,23 +93,47 @@ const markColor = (m: Mark, isZerosyncCol: boolean): string => {
                 <td class="py-4 pr-4 font-medium text-neutral-200">{row.feature}</td>
 
                 <td class="py-4 px-4 bg-accent/5">
-                  <div class={markColor(row.zerosync.mark, true)}>{markSymbol(row.zerosync.mark)}</div>
-                  {row.zerosync.note && <div class="text-xs text-neutral-500 mt-0.5">{row.zerosync.note}</div>}
+                  <div class={markColor(row.zerosync.mark, true)}>
+                    <svg aria-label={markLabel(row.zerosync.mark)} role="img" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      {row.zerosync.mark === 'yes' && <polyline points="20 6 9 17 4 12" />}
+                      {row.zerosync.mark === 'no' && <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>}
+                      {row.zerosync.mark === 'partial' && <line x1="5" y1="12" x2="19" y2="12" />}
+                    </svg>
+                  </div>
+                  {row.zerosync.note && <div class="text-xs text-neutral-500 mt-1">{row.zerosync.note}</div>}
                 </td>
 
                 <td class="py-4 px-4">
-                  <div class={markColor(row.liveblocks.mark, false)}>{markSymbol(row.liveblocks.mark)}</div>
-                  {row.liveblocks.note && <div class="text-xs text-neutral-500 mt-0.5">{row.liveblocks.note}</div>}
+                  <div class={markColor(row.liveblocks.mark, false)}>
+                    <svg aria-label={markLabel(row.liveblocks.mark)} role="img" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      {row.liveblocks.mark === 'yes' && <polyline points="20 6 9 17 4 12" />}
+                      {row.liveblocks.mark === 'no' && <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>}
+                      {row.liveblocks.mark === 'partial' && <line x1="5" y1="12" x2="19" y2="12" />}
+                    </svg>
+                  </div>
+                  {row.liveblocks.note && <div class="text-xs text-neutral-500 mt-1">{row.liveblocks.note}</div>}
                 </td>
 
                 <td class="py-4 px-4">
-                  <div class={markColor(row.yjs.mark, false)}>{markSymbol(row.yjs.mark)}</div>
-                  {row.yjs.note && <div class="text-xs text-neutral-500 mt-0.5">{row.yjs.note}</div>}
+                  <div class={markColor(row.yjs.mark, false)}>
+                    <svg aria-label={markLabel(row.yjs.mark)} role="img" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      {row.yjs.mark === 'yes' && <polyline points="20 6 9 17 4 12" />}
+                      {row.yjs.mark === 'no' && <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>}
+                      {row.yjs.mark === 'partial' && <line x1="5" y1="12" x2="19" y2="12" />}
+                    </svg>
+                  </div>
+                  {row.yjs.note && <div class="text-xs text-neutral-500 mt-1">{row.yjs.note}</div>}
                 </td>
 
                 <td class="py-4 px-4">
-                  <div class={markColor(row.jazz.mark, false)}>{markSymbol(row.jazz.mark)}</div>
-                  {row.jazz.note && <div class="text-xs text-neutral-500 mt-0.5">{row.jazz.note}</div>}
+                  <div class={markColor(row.jazz.mark, false)}>
+                    <svg aria-label={markLabel(row.jazz.mark)} role="img" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      {row.jazz.mark === 'yes' && <polyline points="20 6 9 17 4 12" />}
+                      {row.jazz.mark === 'no' && <><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></>}
+                      {row.jazz.mark === 'partial' && <line x1="5" y1="12" x2="19" y2="12" />}
+                    </svg>
+                  </div>
+                  {row.jazz.note && <div class="text-xs text-neutral-500 mt-1">{row.jazz.note}</div>}
                 </td>
               </tr>
             ))}

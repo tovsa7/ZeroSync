@@ -3,11 +3,14 @@
  * HowItWorks.astro — brief technical explanation with diagram.
  */
 
+const base = import.meta.env.BASE_URL
+
 const bullets = [
-  { label: 'P2P by default', body: 'Peers connect directly via WebRTC DataChannel.' },
-  { label: 'Encrypted relay fallback', body: 'When NAT/firewall blocks P2P, server relays opaque ciphertext (max 64 KB, 30 s TTL).' },
+  { label: 'P2P by default', body: 'Peers connect directly via WebRTC DataChannel. Data never touches the server.' },
+  { label: 'Signaling-only server', body: 'Exchanges ICE candidates / SDP between peers so they can find each other — then gets out of the way.' },
   { label: 'Zero-knowledge server', body: 'Holds no keys, logs only SHA-256-hashed room / peer IDs.' },
   { label: 'Mutual peer auth', body: 'AES-GCM challenge-response on DataChannel open — proves key possession without transmission.' },
+  { label: 'Planned: encrypted relay fallback', body: 'For strict NATs, a future TURN-like mode will forward opaque ciphertext — server still cannot decrypt.' },
 ]
 ---
 
@@ -20,16 +23,196 @@ const bullets = [
       AES-256-GCM encryption applied client-side before any data leaves the browser.
     </p>
 
-    <div class="mb-10 p-6 rounded-xl border border-neutral-800 bg-neutral-900/40 overflow-x-auto">
-      <pre class="text-xs sm:text-sm text-neutral-400 leading-relaxed"><code>{`Browser A                 ZeroSync Server              Browser B
-    │                           │                           │
-    ├── encrypt(data, key) ─────┤                           │
-    │                           │                           │
-    │◄═════════ WebRTC DataChannel (P2P) ═════════════════►│
-    │                           │  relay fallback only      │
-    │                      ciphertext                       │
-    │                   (server cannot decrypt)             │`}</code></pre>
+    <div class="mb-10 p-6 sm:p-8 rounded-xl border border-neutral-800 bg-neutral-900/40">
+      <svg
+        viewBox="0 0 720 355"
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-full h-auto"
+        role="img"
+        aria-labelledby="arch-title arch-desc"
+      >
+        <title id="arch-title">ZeroSync architecture</title>
+        <desc id="arch-desc">
+          Browsers connect directly via WebRTC. The server exchanges
+          signaling info (ICE candidates, SDP) between peers — user data
+          never flows through it.
+        </desc>
+
+        <defs>
+          <marker id="arrow-neutral" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#525252" />
+          </marker>
+          <marker id="arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#5EEAD4" />
+          </marker>
+
+          {/* Key icon — clean bow + shaft with two teeth */}
+          <symbol id="icon-key" viewBox="0 0 24 24">
+            <circle cx="7" cy="12" r="4" fill="none" stroke="#5EEAD4" stroke-width="2" />
+            <path d="M11 12 H21 M17 12 V16 M20 12 V15" stroke="#5EEAD4" stroke-width="2" stroke-linecap="round" fill="none" />
+          </symbol>
+
+          {/* Padlock icon — neutral, used on relay path */}
+          <symbol id="icon-lock" viewBox="0 0 24 24">
+            <rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="#A3A3A3" stroke-width="2" />
+            <path d="M8 11V8a4 4 0 018 0v3" fill="none" stroke="#A3A3A3" stroke-width="2" />
+          </symbol>
+
+          {/* Padlock icon — teal accent, used on P2P arc */}
+          <symbol id="icon-lock-accent" viewBox="0 0 24 24">
+            <rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="#5EEAD4" stroke-width="2" />
+            <path d="M8 11V8a4 4 0 018 0v3" fill="none" stroke="#5EEAD4" stroke-width="2" />
+          </symbol>
+        </defs>
+
+        {/* Top labels — describe the main P2P path */}
+        <text x="360" y="22" text-anchor="middle" fill="#5EEAD4" font-size="13" font-weight="600">WebRTC P2P — preferred</text>
+        <text x="360" y="40" text-anchor="middle" fill="#737373" font-size="10" font-style="italic">data flows directly between browsers, end-to-end encrypted</text>
+
+        {/* Browser A — on the main horizontal path */}
+        <rect x="60" y="72" width="140" height="80" rx="10" fill="#141416" stroke="#404040" stroke-width="1" />
+        <use href="#icon-key" x="170" y="80" width="16" height="16" />
+        <text x="130" y="107" text-anchor="middle" fill="#E5E5E5" font-size="14" font-weight="600">Browser A</text>
+        <text x="130" y="129" text-anchor="middle" fill="#737373" font-size="11">holds room key</text>
+
+        {/* Browser B — on the main horizontal path */}
+        <rect x="520" y="72" width="140" height="80" rx="10" fill="#141416" stroke="#404040" stroke-width="1" />
+        <use href="#icon-key" x="630" y="80" width="16" height="16" />
+        <text x="590" y="107" text-anchor="middle" fill="#E5E5E5" font-size="14" font-weight="600">Browser B</text>
+        <text x="590" y="129" text-anchor="middle" fill="#737373" font-size="11">holds room key</text>
+
+        {/* Direct P2P line — straight, between the two browsers (dashes flow → direction) */}
+        <line class="p2p-flow" x1="200" y1="112" x2="517" y2="112" stroke="#5EEAD4" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrow-accent)" />
+
+        {/* Lock + ciphertext label on P2P line — small background mask to break the line under the label */}
+        <rect x="326" y="104" width="68" height="16" fill="#0B0B0D" />
+        <use href="#icon-lock-accent" x="333" y="106" width="12" height="12" />
+        <text x="349" y="112" fill="#5EEAD4" font-size="10" dominant-baseline="central">ciphertext</text>
+
+        {/* Signaling lines — browsers ↓ server, thin and dashed (slower dash flow) */}
+        <line class="signaling-flow" x1="130" y1="152" x2="310" y2="250" stroke="#525252" stroke-width="1" stroke-dasharray="3 3" />
+        <line class="signaling-flow" x1="590" y1="152" x2="410" y2="250" stroke="#525252" stroke-width="1" stroke-dasharray="3 3" />
+
+        {/* Single centered label between the two diagonals */}
+        <text x="360" y="200" text-anchor="middle" fill="#737373" font-size="11" font-style="italic">signaling only</text>
+
+        {/* Server — visually subordinate: below, accent dashed border */}
+        <rect x="250" y="250" width="220" height="85" rx="10" fill="#0D1714" stroke="#5EEAD4" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.95" />
+        <text x="360" y="277" text-anchor="middle" fill="#E5E5E5" font-size="14" font-weight="600">ZeroSync Server</text>
+        <text x="360" y="298" text-anchor="middle" fill="#5EEAD4" font-size="10" font-family="JetBrains Mono, monospace" opacity="0.85">ICE · SDP · hashed peer IDs</text>
+        <text x="360" y="318" text-anchor="middle" fill="#737373" font-size="10">no user data ever reaches it</text>
+      </svg>
     </div>
+
+    {/* Side-by-side "lens" demo: users see content, server sees signaling metadata */}
+    <p class="text-sm text-neutral-400 mb-4 text-center max-w-3xl mx-auto">
+      Illustrative: your users read their content; the server handles only signaling metadata. Don't trust the picture — verify the architecture yourself below.
+    </p>
+    <div class="mb-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Users' view */}
+      <div class="p-5 rounded-xl border border-neutral-800 bg-neutral-900/40">
+        <div class="flex items-center gap-2 mb-3 text-xs font-medium text-neutral-400 uppercase tracking-wider">
+          <svg aria-hidden="true" class="size-4 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          What your users see
+        </div>
+        <pre class="text-sm text-neutral-200 font-mono leading-relaxed m-0 p-0 border-0 bg-transparent overflow-x-auto"><code># Sprint Planning — Q2
+- Launch target: May 15
+- Design partners: 100
+- Starter pricing: $149
+- Risk: license server
+- Next review: Friday</code></pre>
+      </div>
+
+      {/* Server's view — signaling metadata only */}
+      <div class="p-5 rounded-xl border border-accent/30 bg-neutral-900/40" style="border-style: dashed;">
+        <div class="flex items-center gap-2 mb-3 text-xs font-medium text-accent uppercase tracking-wider">
+          <svg aria-hidden="true" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0110 0v4" />
+          </svg>
+          What the server sees
+        </div>
+        <pre class="text-sm text-accent/80 font-mono leading-relaxed m-0 p-0 border-0 bg-transparent overflow-x-auto"><code>peer_id: sha256(9c2d7e84…)
+room_id: sha256(4a8b3f91…)
+ice:     udp 192.0.2.5:54321
+sdp:     m=application DTLS
+event:   peers.connected
+session: 1745420100</code></pre>
+      </div>
+    </div>
+
+    {/* Verification links — turn the illustration into a path to actual proof */}
+    <div class="mb-12 p-5 rounded-xl border border-neutral-800 bg-neutral-900/30">
+      <div class="text-xs font-medium text-neutral-400 uppercase tracking-wider mb-4">
+        Verify for yourself — don't take our word
+      </div>
+
+      {/* Prominent Live demo CTA */}
+      <a
+        href={`${base}demo/`}
+        class="group flex items-center gap-3 p-4 mb-5 rounded-lg border border-accent/40 bg-accent/5 hover:border-accent hover:bg-accent/10 transition-colors"
+      >
+        <svg aria-hidden="true" class="shrink-0 size-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+        </svg>
+        <div class="flex-1">
+          <div class="text-sm font-semibold text-accent">Open the live demo</div>
+          <div class="text-xs text-neutral-400 mt-0.5">Real multi-user session — inspect the actual WebSocket traffic via the DevTools Network tab</div>
+        </div>
+        <svg aria-hidden="true" class="shrink-0 size-4 text-accent group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </a>
+
+      <div class="text-xs font-medium text-neutral-500 mb-2">Or inspect the code and docs:</div>
+      <ul class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+        <li class="flex gap-2 items-start text-neutral-300">
+          <span class="text-accent/60 mt-1 shrink-0" aria-hidden="true">•</span>
+          <span>
+            <a href="https://github.com/tovsa7/ZeroSync/tree/main/packages/client/src" class="text-accent hover:underline">Client SDK source (MIT)</a>
+            {' '}— where AES-256-GCM is applied before any byte leaves the browser
+          </span>
+        </li>
+        <li class="flex gap-2 items-start text-neutral-300">
+          <span class="text-accent/60 mt-1 shrink-0" aria-hidden="true">•</span>
+          <span>
+            <a href="https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md" class="text-accent hover:underline">SECURITY.md</a>
+            {' '}— formal threat model, cryptographic assumptions, disclosure process
+          </span>
+        </li>
+        <li class="flex gap-2 items-start text-neutral-300">
+          <span class="text-accent/60 mt-1 shrink-0" aria-hidden="true">•</span>
+          <span>
+            Standard <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" class="text-accent hover:underline">Web Crypto API</a>
+            {' '}— browser-native, no custom crypto libraries to audit
+          </span>
+        </li>
+      </ul>
+      <p class="mt-3 text-xs text-neutral-500">
+        Signaling server source is BSL 1.1 — source-available to licensees; third-party audit on the roadmap.
+      </p>
+    </div>
+
+    <style>
+      /* SVG dash flow — reinforces "data flowing" metaphor. Respects reduced-motion (see global.css). */
+      @keyframes dash-flow {
+        to { stroke-dashoffset: -24; }
+      }
+      @keyframes dash-flow-slow {
+        to { stroke-dashoffset: -12; }
+      }
+      .p2p-flow {
+        animation: dash-flow 2s linear infinite;
+      }
+      .signaling-flow {
+        animation: dash-flow-slow 5s linear infinite;
+      }
+    </style>
 
     <ul class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {bullets.map(({ label, body }) => (
