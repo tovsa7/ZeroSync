@@ -117,6 +117,99 @@
   }
 }
 
+/* ───────────────────────────────────────────────────────────────────
+ * Gradient touches — subtle accent gradients for depth/atmosphere.
+ * ─────────────────────────────────────────────────────────────────── */
+
+/* (b) Section dividers — gradient line instead of flat border */
+section[class*="border-t"].border-neutral-900 {
+  border-top-color: transparent !important;
+  position: relative;
+}
+section[class*="border-t"].border-neutral-900::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(94, 234, 212, 0.22) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* (e) Ambient glow — subtle radial behind certain section headers */
+.ambient-glow {
+  position: relative;
+  isolation: isolate;
+}
+.ambient-glow::before {
+  content: '';
+  position: absolute;
+  top: -5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(820px, 90%);
+  height: 420px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(94, 234, 212, 0.06) 0%,
+    rgba(94, 234, 212, 0.02) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* (c) Radial accent on featured cards */
+.card-radial-accent {
+  background:
+    radial-gradient(circle at top left, rgba(94, 234, 212, 0.14), transparent 55%),
+    rgba(94, 234, 212, 0.03) !important;
+}
+
+/* (d) Vertical gradient bg on highlighted pricing card */
+.card-premium-gradient {
+  background: linear-gradient(
+    to bottom,
+    rgba(26, 26, 30, 0.95) 0%,
+    rgba(15, 15, 18, 0.75) 100%
+  ) !important;
+}
+
+/* (f) Conic gradient border — modern "living border" */
+.conic-border {
+  position: relative;
+  background-clip: padding-box !important;
+  border: 1px solid transparent !important;
+}
+.conic-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    rgba(94, 234, 212, 0.6),
+    rgba(45, 212, 191, 0.3),
+    rgba(94, 234, 212, 0.8),
+    rgba(45, 212, 191, 0.2),
+    rgba(94, 234, 212, 0.6)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* Respect reduced motion — at-rules at root, not inside @layer */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
