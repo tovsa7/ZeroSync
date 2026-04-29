@@ -18,7 +18,11 @@ interface Tier {
   popular?:  boolean
 }
 
-const TALLY_STARTUP_WAITLIST = 'https://tally.so/r/ob0M4M'
+// Single universal Tally form (form id `ob0M4M`) — collects email, company,
+// team size, industry, self-hosted readiness, use case. Replaces the prior
+// per-tier mailto: handoff so all paid-tier interest funnels through one
+// inbox with structured data.
+const TALLY_REQUEST_ACCESS = 'https://tally.so/r/ob0M4M'
 
 const tiers: Tier[] = [
   {
@@ -47,7 +51,7 @@ const tiers: Tier[] = [
       'Annual or monthly billing',
       'Grandfathered pricing as you grow',
     ],
-    cta: { text: 'Join waitlist', href: TALLY_STARTUP_WAITLIST },
+    cta: { text: 'Request access', href: TALLY_REQUEST_ACCESS },
   },
   {
     name:     'Team',
@@ -61,7 +65,7 @@ const tiers: Tier[] = [
       'Compliance documentation pack',
       'Direct Slack / email channel',
     ],
-    cta: { text: 'Contact us', href: 'mailto:contact.zerosync@proton.me?subject=ZeroSync%20Team%20tier' },
+    cta: { text: 'Request access', href: TALLY_REQUEST_ACCESS },
     popular: true,
   },
   {
@@ -76,7 +80,7 @@ const tiers: Tier[] = [
       'DPA template included',
       'Quarterly review with the author',
     ],
-    cta: { text: 'Contact us', href: 'mailto:contact.zerosync@proton.me?subject=ZeroSync%20Business%20tier' },
+    cta: { text: 'Request access', href: TALLY_REQUEST_ACCESS },
   },
 ]
 ---
