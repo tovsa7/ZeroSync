@@ -5,8 +5,10 @@
 #   - zerosync  — Go signaling server (ICE/SDP exchange between peers)
 #   - caddy     — reverse proxy with automatic TLS via Let's Encrypt
 #
-# Note: encrypted relay fallback for strict NATs is on the roadmap — not
-#       yet shipped. This compose file deploys the signaling-only server.
+# Note: encrypted relay fallback for strict NATs is shipped as a separate
+#       service (ghcr.io/tovsa7/zerosync-relay). This compose file deploys
+#       the signaling-only server. To enable relay, add a zerosync-relay
+#       service to this file with SIGNALING_URL + ROOM_ID env vars.
 #
 # Prerequisites:
 #   - Docker >= 24 and Docker Compose >= 2.20

@@ -148,15 +148,28 @@ Full threat model + disclosure process: [`SECURITY.md`](https://github.com/tovsa
 
 ## Pricing
 
-| Tier | Price | Rooms × Peers | Support |
-|------|-------|---------------|---------|
-| **Community** | Free | 5 × 10 | GitHub Discussions |
-| **Starter** | $149/mo or $1,490/yr | 100 × 25 | Email — [join waitlist](https://tally.so/r/ob0M4M) |
-| **Business** | $599/mo or $5,990/yr | 1,000 × 50 | Direct founder contact |
+Priced by team size, not by infrastructure metrics. No per-room or per-peer
+limits — they would conflict with the privacy positioning.
 
-Community tier is fully-featured for development and evaluation. Production deployments require a paid tier. Self-hosted only — no managed cloud.
+| Tier | Price | For | Support |
+|------|-------|-----|---------|
+| **Community** | Free | Non-production · OSS · evaluation | GitHub Discussions |
+| **Startup** | $99/mo or $990/yr | Companies up to 10 people | Email — [join waitlist](https://tally.so/r/ob0M4M) |
+| **Team** | $399/mo or $3,990/yr | Companies up to 50 people | Priority email + direct channel |
+| **Business** | $1,499/mo or $14,990/yr | Companies 50+ people · BAA discussion | Quarterly review with the author |
+| **Enterprise** | Talk to us | Custom contracts · signed BAA / DPA | Negotiated SLA |
 
-Need higher limits, custom SLA, or a signed DPA/BAA? Email [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) — you'll reach the author directly.
+Annual plans include 2 months free. Self-hosted only — no managed cloud, by
+design (the server sees only ciphertext, so a managed cloud wouldn't add value
+over your own).
+
+Headcount tiers are honor-system with the standard B2B audit clause. The
+server can't count humans without breaking the privacy story, so this is
+contractual, not technical.
+
+Need a signed DPA / BAA, custom SLA, or to discuss Enterprise terms? Email
+[contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) — you'll
+reach the author directly.
 
 ---
 
@@ -228,7 +241,7 @@ Full docs + Tiptap / CodeMirror / cursor-presence examples: [`packages/react/REA
 | Key derivation | HKDF-SHA-256 |
 | Server visibility | Hashed room/peer IDs and ICE candidates only |
 | Peer auth | AES-GCM challenge-response handshake on DataChannel open |
-| Relay blobs (planned) | Max 64 KB · TTL 30 s · opaque ciphertext · future TURN-like fallback |
+| Relay blobs | Max 64 KB · TTL 30 s · opaque ciphertext · ships as `ghcr.io/tovsa7/zerosync-relay` |
 | Third-party crypto | None — `crypto.subtle` only |
 
 The room key is derived client-side and never leaves the browser. Even under a court order, the server cannot provide document contents — it does not possess the keys.

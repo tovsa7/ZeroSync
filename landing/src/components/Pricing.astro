@@ -1,21 +1,24 @@
 ---
 /**
- * Pricing.astro — 4 tier cards. Business highlighted as "Most popular".
+ * Pricing.astro — 4 self-serve tier cards + Enterprise contact-sales banner.
+ *
+ * Pivot 2026-04-29: priced by team size, not by rooms/peers.
+ * Limits removed — they conflicted with the privacy positioning
+ * (charging more to protect more users is an anti-incentive).
  */
 
 interface Tier {
-  name:       string
-  priceMo:    string | null
-  priceYr:    string
-  yrNote:     string | null
-  rooms:      string
-  peers:      string
-  features:   string[]
-  cta:        { text: string; href: string }
-  popular?:   boolean
+  name:      string
+  priceMo:   string | null
+  priceYr:   string
+  yrNote:    string | null
+  audience:  string  // who this tier is for, e.g. "companies up to 10 people"
+  features:  string[]
+  cta:       { text: string; href: string }
+  popular?:  boolean
 }
 
-const TALLY_STARTER_WAITLIST = 'https://tally.so/r/ob0M4M'
+const TALLY_STARTUP_WAITLIST = 'https://tally.so/r/ob0M4M'
 
 const tiers: Tier[] = [
   {
@@ -23,61 +26,72 @@ const tiers: Tier[] = [
     priceMo:  null,
     priceYr:  'Free',
     yrNote:   null,
-    rooms:    '5',
-    peers:    '10 per room',
+    audience: 'Non-production · OSS · evaluation',
     features: [
-      'Full SDK + server',
-      'Dev / test / evaluation',
-      'Community support',
-      'All crypto features',
+      'Full SDK + signaling server',
+      'All cryptographic features',
+      'Self-hosted, Docker-deployable',
+      'GitHub Discussions support',
     ],
     cta: { text: 'Get started', href: 'https://github.com/tovsa7/ZeroSync' },
   },
   {
-    name:     'Starter',
-    priceMo:  '$149',
-    priceYr:  '$1,490/yr',
+    name:     'Startup',
+    priceMo:  '$99',
+    priceYr:  '$990/yr',
     yrNote:   '2 months free',
-    rooms:    '100',
-    peers:    '25 per room',
+    audience: 'Companies up to 10 people',
     features: [
       'Production license',
       'Email support',
-      'All Community features',
-      '12-month license term',
+      'Annual or monthly billing',
+      'Grandfathered pricing as you grow',
     ],
-    cta: { text: 'Join waitlist', href: TALLY_STARTER_WAITLIST },
+    cta: { text: 'Join waitlist', href: TALLY_STARTUP_WAITLIST },
+  },
+  {
+    name:     'Team',
+    priceMo:  '$399',
+    priceYr:  '$3,990/yr',
+    yrNote:   '2 months free',
+    audience: 'Companies up to 50 people',
+    features: [
+      'Production license',
+      'Priority email support',
+      'Compliance documentation pack',
+      'Direct Slack / email channel',
+    ],
+    cta: { text: 'Contact us', href: 'mailto:contact.zerosync@proton.me?subject=ZeroSync%20Team%20tier' },
+    popular: true,
   },
   {
     name:     'Business',
-    priceMo:  '$599',
-    priceYr:  '$5,990/yr',
+    priceMo:  '$1,499',
+    priceYr:  '$14,990/yr',
     yrNote:   '2 months free',
-    rooms:    '1,000',
-    peers:    '50 per room',
+    audience: 'Companies 50+ people',
     features: [
-      'TOM compliance template',
-      'Private issue tracker',
-      'All Starter features',
-      'Production-scale ready',
+      'Everything in Team',
+      'BAA discussion (HIPAA workflows)',
+      'DPA template included',
+      'Quarterly review with the author',
     ],
-    cta: { text: 'Contact us', href: 'mailto:contact.zerosync@proton.me?subject=Business%20tier%20inquiry' },
-    popular: true,
+    cta: { text: 'Contact us', href: 'mailto:contact.zerosync@proton.me?subject=ZeroSync%20Business%20tier' },
   },
 ]
 ---
 
 <section class="ambient-glow px-6 py-24 border-t border-neutral-900" id="pricing">
-  <div class="max-w-5xl mx-auto">
+  <div class="max-w-6xl mx-auto">
     <h2 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-4">
       Pricing
     </h2>
     <p class="text-neutral-400 mb-12 max-w-2xl">
       Open-core: client SDK is MIT, signaling server is BSL 1.1 (free for dev/test,
-      paid in production).
+      paid in production). Priced by team size — no per-room or per-peer limits.
     </p>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
       {tiers.map((tier) => {
         const tallyMatch = tier.cta.href.match(/tally\.so\/r\/([A-Za-z0-9]+)/)
         const tallyId    = tallyMatch ? tallyMatch[1] : null
@@ -97,8 +111,9 @@ const tiers: Tier[] = [
           )}
 
           <h3 class="text-lg font-semibold text-neutral-100 mb-1">{tier.name}</h3>
+          <p class="text-xs text-neutral-500 mb-4 min-h-[2.5rem]">{tier.audience}</p>
 
-          <div class="mb-4 min-h-[3.5rem]">
+          <div class="mb-5 min-h-[3.5rem]">
             {tier.priceMo ? (
               <>
                 <span class="text-3xl font-bold text-neutral-100">{tier.priceMo}</span>
@@ -115,17 +130,6 @@ const tiers: Tier[] = [
               </>
             )}
           </div>
-
-          <dl class="mb-5 space-y-1.5 text-xs">
-            <div class="flex justify-between">
-              <dt class="text-neutral-500">Rooms</dt>
-              <dd class="text-neutral-300 font-medium">{tier.rooms}</dd>
-            </div>
-            <div class="flex justify-between">
-              <dt class="text-neutral-500">Peers</dt>
-              <dd class="text-neutral-300 font-medium">{tier.peers}</dd>
-            </div>
-          </dl>
 
           <ul class="flex-1 space-y-2 text-sm text-neutral-300 mb-6">
             {tier.features.map((f) => (
@@ -162,14 +166,37 @@ const tiers: Tier[] = [
       })}
     </div>
 
+    {/* Enterprise — contact-sales banner below the self-serve grid */}
+    <article class="mt-6 p-6 rounded-xl border border-neutral-800 bg-neutral-900/30 hover:border-neutral-700 transition-colors flex flex-col md:flex-row md:items-center gap-5">
+      <div class="flex-1">
+        <div class="flex items-center gap-3 mb-2">
+          <h3 class="text-lg font-semibold text-neutral-100">Enterprise</h3>
+          <span class="text-xs text-neutral-500">Talk to us</span>
+        </div>
+        <p class="text-sm text-neutral-400 leading-relaxed max-w-3xl">
+          Custom contracts, signed BAA / DPA, priority on the roadmap, and a
+          quarterly sync with the author. Designed for HIPAA / privileged-legal
+          / fintech / regulated-EU SaaS engagements where procurement requires
+          line-item negotiation and security review.
+        </p>
+      </div>
+      <a
+        href="mailto:contact.zerosync@proton.me?subject=ZeroSync%20Enterprise%20inquiry"
+        class="shrink-0 inline-flex items-center justify-center px-5 py-3 rounded-lg bg-accent text-neutral-950 font-semibold hover:bg-accent-muted hover:text-neutral-950"
+      >
+        Email contact.zerosync@proton.me
+      </a>
+    </article>
+
     <p class="mt-10 text-sm text-neutral-500 max-w-3xl">
-      Community tier is fully-featured for development and evaluation. Production deployments
-      require a paid tier. Self-hosted only — no managed cloud (by design — the server sees
-      only ciphertext, so a managed cloud wouldn't add value over your own).
+      Self-hosted only — no managed cloud (by design — the server sees only
+      ciphertext, so a managed cloud wouldn't add value over your own).
+      Headcount tiers are honor-system with the standard B2B audit clause; we
+      can't count your team without breaking the privacy story.
     </p>
 
     <p class="mt-4 text-sm text-neutral-500 max-w-3xl">
-      Need higher limits, custom SLA, or a signed DPA/BAA?
+      Need higher limits, custom SLA, or a signed DPA / BAA?
       {' '}<a href="mailto:contact.zerosync@proton.me?subject=Custom%20terms%20inquiry" class="text-accent hover:underline">Email contact.zerosync@proton.me</a> — you'll reach the author directly.
     </p>
   </div>

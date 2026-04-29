@@ -103,9 +103,11 @@ const ogImage = `${siteUrl}og-image.png`
       url:               siteUrl,
       license:           'MIT (client SDK) + BSL 1.1 (server)',
       offers: [
-        { '@type': 'Offer', name: 'Community', price: '0',    priceCurrency: 'USD' },
-        { '@type': 'Offer', name: 'Starter',   price: '149',  priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
-        { '@type': 'Offer', name: 'Business',  price: '599',  priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
+        { '@type': 'Offer', name: 'Community',  price: '0',    priceCurrency: 'USD' },
+        { '@type': 'Offer', name: 'Startup',    price: '99',   priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
+        { '@type': 'Offer', name: 'Team',       price: '399',  priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
+        { '@type': 'Offer', name: 'Business',   price: '1499', priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
+        { '@type': 'Offer', name: 'Enterprise', priceCurrency: 'USD', availability: 'https://schema.org/InStock', description: 'Custom contracts — contact contact.zerosync@proton.me' },
       ],
     })} />
   </head>

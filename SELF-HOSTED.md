@@ -96,29 +96,47 @@ const room = await Room.join({
 | Image | Description |
 |-------|-------------|
 | `ghcr.io/tovsa7/zerosync-server:latest` | Signaling server (ICE/SDP exchange) |
+| `ghcr.io/tovsa7/zerosync-relay:latest`  | Encrypted relay node — optional, for strict-NAT / corporate-proxy environments where peer-to-peer WebRTC fails |
 
 Multi-arch (`linux/amd64`, `linux/arm64`) built from source on every release.
 
-> **Roadmap — encrypted relay fallback**
-> A TURN-like relay component for strict NATs is in development. When shipped,
-> it will deploy as an additional service (`ghcr.io/tovsa7/zerosync-relay`) in
-> the same compose file and forward opaque ciphertext only — the server still
-> cannot decrypt.
+The relay node joins the signaling server as a special peer of type `"relay"`,
+forwards opaque ciphertext blobs (≤64 KB each) between users that cannot
+establish direct WebRTC, and never possesses any room key — it sees only
+encrypted bytes. Logs use SHA-256-hashed identifiers; no plaintext IDs are
+emitted. Health probe at `:8081/health`.
+
+To opt in, add the relay service to your compose file (one process per room
+you want covered) and set `SIGNALING_URL` and `ROOM_ID` env vars. Most
+deployments do not need this — direct WebRTC works for the majority of NAT
+configurations.
 
 ---
 
 ## License tiers
 
-The server runs on the **Free tier** by default (5 rooms, 10 peers/room) — no license key required.
+The server runs on the **Community tier** by default — no license key required,
+no enforced room or peer limits. Community tier is intended for non-production
+use (development, OSS, evaluation); production deployments should hold a paid
+tier license.
 
-For higher limits, contact [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) to obtain a license key. Keys are offline-verified JWTs — no network calls, no phone-home.
+Paid tiers (Startup / Team / Business / Enterprise — see the [Pricing page](https://tovsa7.github.io/ZeroSync/#pricing))
+are billed by team size, not by infrastructure metrics. Headcount is a
+contractual term, audited via the same self-attestation mechanism most B2B
+SaaS uses; the server does not count humans at runtime.
 
-Set the license in `.env`:
+To install a license key, contact [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me).
+Keys are offline-verified HS256 JWTs — no network calls, no phone-home, no
+telemetry. Set them in `.env`:
 
 ```bash
-ZEROSYNC_LICENSE_KEY=eyJ...   # JWT from ZeroSync
-ZEROSYNC_LICENSE_SECRET=...   # signing secret provided with your key
+ZEROSYNC_LICENSE_KEY=eyJ...   # JWT issued by ZeroSync
+ZEROSYNC_LICENSE_SECRET=...   # signing secret shipped alongside the key
 ```
+
+Self-hosted operators who want a soft cap on rooms or peers (for their own
+infrastructure protection, not pricing) can issue a custom-limited key via
+`go run ./cmd/keygen -tier <tier> -customer <id> -days <n> -max-rooms <N> -max-peers <N>`.
 
 ---
 

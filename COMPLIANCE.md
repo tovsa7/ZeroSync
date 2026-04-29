@@ -158,7 +158,7 @@ The signaling server logs operational events for service-reliability purposes:
 |-----------|-------------|-----------|
 | Connection open/close | SHA-256-hashed client IP, SHA-256-hashed room/peer ID, timestamp | 30 days |
 | Room lifecycle (create, GC) | SHA-256-hashed room ID, peer count, timestamp | 30 days |
-| Relay blob transit *(planned)* | Size, timestamp (no content ever) | 30 days |
+| Relay blob transit | Size, timestamp, SHA-256-hashed sender ID (no content ever — relay has no roomKey) | 30 days |
 | Authentication failures | Error code, SHA-256-hashed peer ID, timestamp | 30 days |
 
 Logs are written to the container's stderr and rotated by standard logging

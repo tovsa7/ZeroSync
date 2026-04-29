@@ -143,14 +143,19 @@ Full threat model + disclosure process: [`SECURITY.md`](https://github.com/tovsa
 
 ## Pricing
 
-| Tier | Price | Rooms × Peers | Email SLA |
-|------|-------|---------------|-----------|
-| **Community** | Free | 5 × 10 | GitHub Discussions |
-| **Starter** | $149/mo or $1,490/yr | 100 × 25 | 3 business days |
-| **Business** | $599/mo or $5,990/yr | 1,000 × 50 | 1 business day |
-| **Enterprise** | From $25,000/yr | Unlimited | 4 business hours + custom SLA |
+Priced by team size. No per-room or per-peer limits — they conflicted with the privacy positioning.
 
-Community tier is fully-featured for development and evaluation. Production use (commercial deployment) requires a paid tier. Contact [sales](mailto:contact.zerosync@proton.me) for Enterprise.
+| Tier | Price | For | Email SLA |
+|------|-------|-----|-----------|
+| **Community** | Free | Non-production · OSS · evaluation | GitHub Discussions |
+| **Startup** | $99/mo or $990/yr | Companies up to 10 people | 3 business days |
+| **Team** | $399/mo or $3,990/yr | Companies up to 50 people | 1 business day |
+| **Business** | $1,499/mo or $14,990/yr | Companies 50+ people · BAA discussion | Same-day, working hours |
+| **Enterprise** | Talk to us | Custom contracts · signed BAA / DPA | Negotiated |
+
+Annual = 2 months free. Self-hosted only — no managed cloud. Headcount tiers are honor-system with the standard B2B audit clause; the server can't count humans without breaking the privacy story.
+
+Contact [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) for Enterprise terms or signed DPA / BAA.
 
 ---
 
