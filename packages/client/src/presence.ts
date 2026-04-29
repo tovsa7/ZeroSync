@@ -66,17 +66,33 @@ export class PresenceManager {
     this.transport = opts.transport
     this.awareness = new Awareness(opts.doc)
 
+    // Listen to BOTH 'update' and 'change'. They serve different purposes:
+    //
+    //   - 'update' fires on EVERY setLocalState call, including the no-op
+    //     clock refresh from y-protocols' internal _checkInterval (which runs
+    //     every outdatedTimeout/2 ≈ 15 s). We MUST broadcast on every update
+    //     to keep our awareness fresh on remote peers — otherwise they age us
+    //     out after outdatedTimeout (30 s default) and 'change' fires there
+    //     with origin='timeout', removing us from their view.
+    //
+    //   - 'change' fires only when state actually differs (added/updated/
+    //     removed contains entries). Use for UI-facing notifications and the
+    //     peerId → clientID bookkeeping; suppresses redundant re-renders that
+    //     'update' would otherwise cause on every refresh tick.
+    this.awareness.on('update', (_payload: unknown, origin: unknown) => {
+      if (origin !== 'local') return
+      // Broadcast local state (including no-op refreshes from _checkInterval).
+      const update = encodeAwarenessUpdate(this.awareness, [this.awareness.clientID])
+      this.transport.broadcast(MessageType.PRESENCE, update)
+    })
+
     this.awareness.on(
       'change',
       (
         { added, updated, removed }: { added: number[]; updated: number[]; removed: number[] },
         origin: unknown,
       ) => {
-        if (origin === 'local') {
-          // Broadcast local state change to all peers as a binary awareness update.
-          const update = encodeAwarenessUpdate(this.awareness, [this.awareness.clientID])
-          this.transport.broadcast(MessageType.PRESENCE, update)
-        } else {
+        if (origin !== 'local') {
           // Update peerClientIds from newly added/updated remote states.
           const states = this.awareness.getStates()
           for (const clientID of [...added, ...updated]) {

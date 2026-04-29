@@ -100,6 +100,20 @@ describe('PresenceManager.updatePresence', () => {
     expect(transport.broadcast).toHaveBeenCalledTimes(2)
     pm.destroy()
   })
+
+  // Regression guard: the broadcast handler listens to y-protocols 'update'
+  // (fires on every setLocalState call), NOT 'change' (only fires on diff).
+  // Without this, repeated identical state calls — including the no-op clock
+  // refresh that y-protocols' internal _checkInterval runs every ~15 s —
+  // would not broadcast, and remote peers would age us out at the 30 s
+  // outdatedTimeout. See presence.ts comment on the dual-listener design.
+  it('broadcasts even when local state has not changed (refresh path)', () => {
+    const { pm, transport } = makePresence()
+    pm.updatePresence({ name: 'Alice' })
+    pm.updatePresence({ name: 'Alice' }) // identical — no diff
+    expect(transport.broadcast).toHaveBeenCalledTimes(2)
+    pm.destroy()
+  })
 })
 
 // ── handleMessage ─────────────────────────────────────────────────────────────
