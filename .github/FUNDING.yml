@@ -1,0 +1,12 @@
+# Funding paths shown in the repo's "Sponsor" button.
+#
+# To enable GitHub Sponsors, set up a profile at
+#   https://github.com/sponsors
+# then uncomment the `github:` line below.
+#
+# `custom:` already points at the commercial-tier landing — that is the
+# primary sustainability path. Sponsors is supplementary.
+
+# github: [tovsa7]
+custom:
+  - https://tovsa7.github.io/ZeroSync/#pricing

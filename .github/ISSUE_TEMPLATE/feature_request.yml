@@ -1,0 +1,52 @@
+name: Feature request
+description: Propose a new capability or enhancement
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion.
+
+        ZeroSync is opinionated and small on purpose — most additions need to clear a "does this strengthen the privacy / regulated-industry positioning?" bar. Vague feature wishes are usually closed; a concrete user need with a use case has a much better chance.
+
+        For open-ended ideas / "have you considered…", use [Discussions](https://github.com/tovsa7/ZeroSync/discussions) — it is lower-friction than an issue.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Describe the situation, not the solution. Include who the user is and what they cannot do today.
+      placeholder: "I am a CTO at a small therapy-tech company. We need to retain encrypted message backups for 7 years to satisfy our state compliance audit, but the current SDK does not expose a snapshot API the server can hold without breaking the zero-knowledge guarantee."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: A specific API shape, behavior, or capability. If unsure, leave blank — the problem description is what matters most.
+      placeholder: "Add Room.exportEncryptedSnapshot() that returns ArrayBuffer of the current state, encrypted with the room key. Server stores the bytes; only the room key holder can later decrypt."
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Have you tried a workaround? Used another library? Why does it not fit?
+
+  - type: input
+    id: tier
+    attributes:
+      label: Are you using a paid tier?
+      description: Helps prioritize. Free / Community use is welcome — say "Community" if so.
+      placeholder: "Community / Startup / Team / Business / Enterprise"
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I searched existing issues and discussions for the same idea.
+          required: true
+        - label: This is a concrete user need, not "would be nice to have".
+          required: true

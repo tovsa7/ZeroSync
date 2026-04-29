@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / general discussion
+    url: https://github.com/tovsa7/ZeroSync/discussions
+    about: For "how do I…", architecture questions, integration help, or anything that is not a confirmed bug or feature request.
+  - name: Security disclosure
+    url: https://github.com/tovsa7/ZeroSync/security/policy
+    about: Reports of vulnerabilities, key-handling bugs, or anything that should not be filed in public — see SECURITY.md for the disclosure process.
+  - name: Commercial / production licensing
+    url: mailto:contact.zerosync@proton.me?subject=ZeroSync%20commercial%20inquiry
+    about: Production licensing, signed DPA / BAA, custom terms — emails the author directly.

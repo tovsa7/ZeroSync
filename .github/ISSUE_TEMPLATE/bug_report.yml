@@ -1,0 +1,106 @@
+name: Bug report
+description: Reproducible runtime issue with the SDK, demo, or signaling server
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        **Before filing**, please:
+        1. Search [existing issues](https://github.com/tovsa7/ZeroSync/issues?q=is%3Aissue) — yours may already be tracked.
+        2. If it is a question or design discussion (not a confirmed bug), use [Discussions](https://github.com/tovsa7/ZeroSync/discussions) instead.
+        3. If it is a security vulnerability, **do not file here** — see [SECURITY.md](https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md) for the private disclosure process.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where does the bug occur?
+      options:
+        - "@tovsa7/zerosync-client (SDK)"
+        - "@tovsa7/zerosync-react (hooks)"
+        - "Signaling server (Docker / self-hosted)"
+        - "Encrypted relay (Docker / self-hosted)"
+        - "Live demo (tovsa7.github.io/ZeroSync/demo)"
+        - "Documentation"
+        - "Other / not sure"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear, factual description of the actual behavior. Screenshots / GIFs welcome.
+      placeholder: "When two peers join the same room and one of them refreshes, …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      placeholder: "Both peers should see each other's presence again within a few seconds."
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: Minimal numbered steps. If possible, link to a CodeSandbox / StackBlitz / repo that reproduces.
+      placeholder: |
+        1. Open https://tovsa7.github.io/ZeroSync/demo/ in two tabs (same room).
+        2. Type "hello" in tab A.
+        3. Refresh tab B.
+        4. Observe …
+      render: markdown
+    validations:
+      required: true
+
+  - type: input
+    id: client-version
+    attributes:
+      label: SDK version
+      description: Output of `npm ls @tovsa7/zerosync-client` or the version pinned in package.json. Leave blank if not using the SDK.
+      placeholder: "0.1.7"
+
+  - type: input
+    id: server-version
+    attributes:
+      label: Server version (if self-hosted)
+      description: Image tag or commit SHA — e.g. `ghcr.io/tovsa7/zerosync-server:latest@sha256:…`. Leave blank if using the live demo.
+      placeholder: "ghcr.io/tovsa7/zerosync-server:latest"
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser (where applicable)
+      multiple: true
+      options:
+        - "Chrome / Chromium / Edge"
+        - "Firefox"
+        - "Safari (desktop)"
+        - "Safari (iOS)"
+        - "Chrome (Android)"
+        - "Other / N/A"
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console output / error messages
+      description: Browser DevTools console for SDK / demo issues, or `docker logs` output for server issues. Paste raw text.
+      render: shell
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Confirmation
+      options:
+        - label: I searched existing issues and discussions before filing.
+          required: true
+        - label: This is a reproducible bug, not a question (questions go to Discussions).
+          required: true
+        - label: This is not a security vulnerability (those go through SECURITY.md).
+          required: true
