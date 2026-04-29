@@ -207,6 +207,72 @@ describe('PresenceManager.removePeer', () => {
   })
 })
 
+// ── syncToPeer ────────────────────────────────────────────────────────────────
+
+describe('PresenceManager.syncToPeer', () => {
+  it('sends to the requested peerId only (per-peer addressing, not broadcast)', () => {
+    const { pm, transport } = makePresence('me')
+    pm.updatePresence({ name: 'Alice' })
+    transport.broadcast.mockClear()
+    transport.sendDC.mockClear()
+
+    pm.syncToPeer('target-peer')
+    expect(transport.sendDC).toHaveBeenCalledOnce()
+    expect(transport.sendDC.mock.calls[0]![0]).toBe('target-peer')
+    pm.destroy()
+  })
+
+  it('sends the local awareness snapshot to one peer over DC', () => {
+    const { pm, transport } = makePresence('me')
+    pm.updatePresence({ name: 'Alice' })
+    transport.broadcast.mockClear() // ignore the broadcast from updatePresence
+
+    pm.syncToPeer('new-peer')
+    expect(transport.sendDC).toHaveBeenCalledOnce()
+    const [target, type, data] = transport.sendDC.mock.calls[0]!
+    expect(target).toBe('new-peer')
+    expect(type).toBe(0x02)             // MessageType.PRESENCE
+    expect(data).toBeInstanceOf(Uint8Array)
+    pm.destroy()
+  })
+
+  it('snapshot includes BOTH local AND known remote awareness states', () => {
+    const { pm, transport } = makePresence('me')
+    pm.updatePresence({ name: 'Me' })
+    pm.handleMessage('peer-1', makeRemoteUpdate('peer-1', { name: 'A' }))
+    pm.handleMessage('peer-2', makeRemoteUpdate('peer-2', { name: 'B' }))
+    transport.sendDC.mockClear()
+
+    pm.syncToPeer('new-peer')
+    expect(transport.sendDC).toHaveBeenCalledOnce()
+    const bytes = transport.sendDC.mock.calls[0]![2] as Uint8Array
+
+    // Decode the snapshot in a fresh Awareness — it should reconstruct all
+    // three peers (the gossiped sender + two known remotes).
+    const remoteDoc = new Y.Doc()
+    const remoteAw  = new Awareness(remoteDoc)
+    applyAwarenessUpdate(remoteAw, bytes, 'test')
+    const peerIds = [...remoteAw.getStates().values()]
+      .map(s => s['peerId'])
+      .filter((id): id is string => typeof id === 'string')
+      .sort()
+    expect(peerIds).toEqual(['me', 'peer-1', 'peer-2'])
+
+    remoteAw.destroy()
+    pm.destroy()
+  })
+
+  it('does not call broadcast (per-peer send only, no fan-out)', () => {
+    const { pm, transport } = makePresence('me')
+    pm.updatePresence({ name: 'Alice' })
+    transport.broadcast.mockClear()
+
+    pm.syncToPeer('peer-x')
+    expect(transport.broadcast).not.toHaveBeenCalled()
+    pm.destroy()
+  })
+})
+
 // ── getPresence ───────────────────────────────────────────────────────────────
 
 describe('PresenceManager.getPresence', () => {

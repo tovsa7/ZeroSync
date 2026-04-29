@@ -25,6 +25,11 @@
  * - destroy() broadcasts a null "peer left" awareness update to all connected peers,
  *   then destroys the Awareness instance. Must be called BEFORE transport.close()
  *   to ensure the broadcast reaches peers. No onPresence callbacks fire after destroy().
+ * - syncToPeer(peerId) sends the FULL current awareness state (every clientID known
+ *   locally) to one peer over its DataChannel. Used at peer-connect time to bootstrap
+ *   awareness sync — without this, the new peer would see "alone" until y-protocols'
+ *   internal _checkInterval fires its next refresh (up to ~15 s). No-op if no local
+ *   state has been set yet and no remote states have been observed.
  * - Decryption is handled by Transport; presence receives plaintext bytes.
  */
 
@@ -129,6 +134,32 @@ export class PresenceManager {
     // removeAwarenessStates triggers the 'change' event, which cleans
     // peerClientIds and fires onPresence callbacks.
     removeAwarenessStates(this.awareness, [clientID], 'remote')
+  }
+
+  /**
+   * Sends the full local awareness snapshot (every clientID currently known —
+   * local plus all remote peers) to one specific peer over its DataChannel.
+   *
+   * Spec:
+   *   - Called by Room when a peer's transport reaches a usable state
+   *     (DataChannel open, or relay-ready).
+   *   - Without this, a freshly-connected peer would see "(you are alone)"
+   *     until y-protocols Awareness fires its next internal _checkInterval
+   *     refresh — up to ~15 s under defaults. Sending the snapshot eagerly
+   *     closes that gap and also propagates other peers' state through this
+   *     peer (gossip-style), so a third peer joining later is discovered
+   *     without waiting for every existing peer's individual refresh.
+   *   - No-op if there are no awareness states to send (rare: only happens
+   *     when no local presence has been set AND no remote updates received).
+   *   - Sent via transport.sendDC, which is a no-op until the DataChannel is
+   *     verified open. Callers must invoke this only from a hook that already
+   *     guarantees DC readiness (or relay readiness for the relay variant).
+   */
+  syncToPeer(peerId: string): void {
+    const clientIDs = Array.from(this.awareness.getStates().keys())
+    if (clientIDs.length === 0) return
+    const update = encodeAwarenessUpdate(this.awareness, clientIDs)
+    this.transport.sendDC(peerId, MessageType.PRESENCE, update)
   }
 
   /** Registers a callback for presence changes. Returns an unsubscribe function. */

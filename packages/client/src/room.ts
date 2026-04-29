@@ -119,10 +119,22 @@ export class Room {
             break
         }
       },
-      // Request full Yjs state once the DataChannel is open and ready.
-      // Calling sendDC before dcReady would silently drop the message.
-      onPeerConnected: (peerId) => crdtSync.requestFullState(peerId),
-      onPeerRelayReady: (peerId) => crdtSync.requestFullState(peerId),
+      // Request full Yjs state and send the awareness snapshot once the
+      // DataChannel is open and ready. Calling sendDC before dcReady would
+      // silently drop the message.
+      //
+      // The presence sync is critical: y-protocols Awareness only auto-
+      // refreshes every ~15 s, so without the eager snapshot a new peer
+      // would see "(you are alone)" for up to 15 seconds even after
+      // P2P is already established.
+      onPeerConnected: (peerId) => {
+        crdtSync.requestFullState(peerId)
+        presenceMgr.syncToPeer(peerId)
+      },
+      onPeerRelayReady: (peerId) => {
+        crdtSync.requestFullState(peerId)
+        presenceMgr.syncToPeer(peerId)
+      },
     })
 
     presenceMgr = new PresenceManager({
