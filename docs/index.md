@@ -21,7 +21,8 @@ Add Google Docs-style multi-user editing, presence, and chat to any web app — 
 - **Self-hosted** — run on your own Hetzner / AWS / bare metal via one Docker image. No vendor-cloud dependency.
 - **Open-source client** — MIT licensed, auditable, no proprietary crypto. Server is BSL 1.1 (free for dev/test, paid in production).
 - **Real React hooks** — `@tovsa7/zerosync-react` for declarative integration (`useYText`, `usePresence`, `useMyPresence` …). Works with Tiptap, CodeMirror, Quill via standard Yjs bindings.
-- **141+ tests** — property-based + integration. OpenSSF Best Practices badge. SLSA provenance on every npm release.
+- **Encrypted-at-rest persistence** (v0.2.0+) — opt-in IndexedDB store keyed by a domain-separated derivative of your `userSecret`. Doc state survives reload before `Room.join` resolves; the on-disk row is ciphertext only.
+- **230+ tests** — property-based + integration + headless-browser E2E for persistence. OpenSSF Best Practices badge. SLSA provenance on every npm release.
 
 ## Use cases
 
@@ -194,10 +195,14 @@ const room = await Room.join({
 | `nonce` | `string` | Base64 random bytes for replay protection |
 | `hmac` | `string` | HMAC-SHA-256 of the HELLO message |
 | `iceServers` | `RTCIceServer[]` | WebRTC ICE servers. Pass `[]` to disable STUN (same-network P2P only). |
+| `persistence` _(optional)_ | `EncryptedPersistence` | Encrypted-at-rest IndexedDB store. State is loaded and applied before `Room.join` resolves; subsequent updates are saved on a 500 ms debounce. See [client README](https://github.com/tovsa7/ZeroSync/blob/main/packages/client/README.md#encrypted-at-rest-persistence). |
 
 Room methods: `getDoc()` / `updatePresence()` / `onPresence()` / `getPresence()` / `onStatus()` / `getConnectionSummary()` / `leave()` — see `packages/client/src/room.ts` for full spec.
 
-Helpers: `deriveRoomKey(secret, roomId)` — HKDF-SHA-256 key derivation, returns non-extractable `CryptoKey`.
+Helpers:
+- `deriveRoomKey(secret, roomId)` — HKDF-SHA-256, `info="zerosync-room:{roomId}"`. Wire encryption key.
+- `derivePersistKey(secret, roomId)` — HKDF-SHA-256, `info="zerosync-persist:{roomId}"`. At-rest encryption key, **domain-separated** from `roomKey`.
+- `EncryptedPersistence.open({ roomId, key })` — per-room IDB store (`zerosync-persistence-{roomId}`); `load()` / `save()` / `clear()` / `close()`. Caller owns lifecycle.
 
 ### `@tovsa7/zerosync-react`
 
@@ -205,7 +210,7 @@ Declarative React hooks layered on the client SDK:
 
 | Hook | Returns |
 |------|---------|
-| `<ZeroSyncProvider>` | Context provider — calls `Room.join` on mount, `leave` on unmount |
+| `<ZeroSyncProvider>` | Context provider — calls `Room.join` on mount, `leave` on unmount; optional `persistKey` prop for at-rest persistence |
 | `useRoom()` | `Room \| null` |
 | `useConnectionStatus()` | `'connecting' \| 'connected' \| 'reconnecting' \| 'closed'` |
 | `useYText(name)` | `Y.Text \| null` (re-renders on update) |
@@ -214,7 +219,9 @@ Declarative React hooks layered on the client SDK:
 | `usePresence<T>()` | `ReadonlyMap<peerId, T>` |
 | `useMyPresence<T>()` | `[T \| null, setState]` — broadcasts via `room.updatePresence` |
 
-Full docs + Tiptap / CodeMirror / cursor-presence examples: [`packages/react/README.md`](packages/react/README.md).
+Re-exports `derivePersistKey` from the client SDK so React consumers don't need a direct dependency on `@tovsa7/zerosync-client`.
+
+Full docs + Tiptap / CodeMirror / cursor-presence + persistence examples: [`packages/react/README.md`](https://github.com/tovsa7/ZeroSync/blob/main/packages/react/README.md).
 
 ---
 
@@ -225,6 +232,8 @@ Full docs + Tiptap / CodeMirror / cursor-presence examples: [`packages/react/REA
 | Encryption | AES-256-GCM via Web Crypto API |
 | IV | 12 random bytes per message — never reused |
 | Key derivation | HKDF-SHA-256 |
+| Domain separation | Wire `roomKey` and at-rest `persistKey` are independently derived from the same user secret (different HKDF `info`); compromise of one does not expose the other |
+| At-rest encryption | Optional IndexedDB store, ciphertext only, per-room database |
 | Server visibility | Hashed room/peer IDs and ICE candidates only |
 | Peer auth | AES-GCM challenge-response handshake on DataChannel open |
 | Relay blobs | Max 64 KB · TTL 30 s · opaque ciphertext |

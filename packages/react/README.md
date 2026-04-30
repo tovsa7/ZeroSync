@@ -7,6 +7,7 @@ Declarative React bindings for the [@tovsa7/zerosync-client](https://www.npmjs.c
 - ✅ Zero-knowledge server (AES-256-GCM via Web Crypto)
 - ✅ Peer-to-peer via WebRTC DataChannel with encrypted relay fallback
 - ✅ CRDT-based sync via Yjs
+- ✅ **Encrypted-at-rest persistence** (v0.2.0+) — opt-in via `persistKey` prop, doc survives reload before `Room.join` resolves
 - ✅ No runtime dependencies — all Yjs/client/React are peer deps
 - ✅ TypeScript strict mode, full type inference
 - ✅ React 18+ (`useSyncExternalStore` for tear-free Yjs reactivity)
@@ -107,6 +108,7 @@ Mounts a `Room` from the ZeroSync client SDK and exposes it through React contex
 | `nonce`      | `string`                                | Base64 random bytes for HELLO replay protection   |
 | `hmac`       | `string`                                | HMAC of HELLO message (`""` while opt-in)         |
 | `iceServers` | `RTCIceServer[]`                        | WebRTC ICE servers (pass `[]` to disable STUN)    |
+| `persistKey` | `CryptoKey` _optional_                  | When set, the provider opens an `EncryptedPersistence` keyed by `roomId` + `persistKey` and threads it into `Room.join`. State is restored from IDB **before** the Room resolves; subsequent updates are saved on a 500 ms debounce. Lifecycle is fully managed — provider opens on mount, closes on unmount. See [Persistence](#persistence) below. |
 | `onError`    | `(e: unknown) => void` _optional_       | Called if `Room.join` rejects                     |
 | `children`   | `ReactNode`                             |                                                   |
 
@@ -201,6 +203,96 @@ setMe({ ...me, cursor: { x, y } })
 ```
 
 **Do not include `peerId` in the state** — the SDK injects it internally as a routing field.
+
+---
+
+## Persistence
+
+Pages reload. Browsers crash. Without persistence, every collaborative session
+restarts from zero — even text typed seconds ago is gone if the tab refreshes.
+
+Pass `persistKey` to `<ZeroSyncProvider>` to encrypt the Yjs document at rest
+in IndexedDB. On reload, the doc is restored from disk **before** the
+provider's connection status reaches `'connected'` — no flash of empty
+editor, no waiting on peers to sync.
+
+```tsx
+import { useEffect, useState } from 'react'
+import {
+  ZeroSyncProvider,
+  derivePersistKey,
+  useYText,
+} from '@tovsa7/zerosync-react'
+import { deriveRoomKey } from '@tovsa7/zerosync-client'
+
+function App() {
+  const [keys, setKeys] = useState<{ roomKey: CryptoKey; persistKey: CryptoKey } | null>(null)
+
+  useEffect(() => {
+    const userSecret = crypto.getRandomValues(new Uint8Array(32))
+    Promise.all([
+      deriveRoomKey(userSecret,    'my-room'),
+      derivePersistKey(userSecret, 'my-room'),
+    ]).then(([roomKey, persistKey]) => setKeys({ roomKey, persistKey }))
+  }, [])
+
+  if (!keys) return <p>Loading…</p>
+
+  return (
+    <ZeroSyncProvider
+      serverUrl="wss://sync.example.com/ws"
+      roomId="my-room"
+      roomKey={keys.roomKey}
+      persistKey={keys.persistKey}
+      peerId={crypto.randomUUID()}
+      nonce={btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16))))}
+      hmac=""
+      iceServers={[{ urls: 'stun:stun.l.google.com:19302' }]}
+    >
+      <Editor />
+    </ZeroSyncProvider>
+  )
+}
+```
+
+### What you get
+
+- **IDB row is ciphertext only** — AES-256-GCM (12-byte IV + ciphertext+tag). Devtools, disk forensics, and any inspection of the IDB row see opaque bytes.
+- **Per-room database** — name `zerosync-persistence-{roomId}`. Wipe one room with `indexedDB.deleteDatabase('zerosync-persistence-' + roomId)` without touching others.
+- **Debounced saves** — 500 ms window coalesces rapid edits into a single write. Both local edits and remote merges (SYNC_RES) trigger save, so on-disk state tracks the merged document.
+- **Flushes on hide** — `visibilitychange → hidden` and `pagehide` flush pending saves immediately, surviving tab close and BFCache eviction.
+- **Tamper / wrong-key recovery** — load failure is logged and swallowed; sync continues with peer SYNC_RES, and the next save overwrites the bad row.
+
+### Domain separation
+
+`persistKey` and `roomKey` are independently derived from the same `userSecret` via HKDF-SHA-256 with different `info` strings:
+
+- `deriveRoomKey(secret, roomId)` — `info: "zerosync-room:{roomId}"` — wire encryption
+- `derivePersistKey(secret, roomId)` — `info: "zerosync-persist:{roomId}"` — at-rest encryption
+
+A leak of the on-disk key cannot decrypt wire traffic, and vice versa. Same `userSecret` (32 bytes you stored once), distinct cryptographic domains.
+
+### Lifecycle
+
+Fully managed by the provider:
+
+- **Mount**: opens `EncryptedPersistence` → awaits `Room.join` (which restores stored state) → exposes `Room` via context.
+- **Unmount**: calls `room.leave()` (flushes pending save) → then `persistence.close()`. Order matters: the final flush must land before the IDB connection closes.
+
+If `Room.join` rejects (server unreachable), the provider closes the persistence to avoid leaking the IDB connection. If you unmount during the join, late-arriving Room and persistence are still cleaned up.
+
+### Lower-level access
+
+If you need direct control over `EncryptedPersistence` (e.g. share across providers, custom lifecycle), open it yourself with the client SDK and pass it via `persistence` prop instead of `persistKey`:
+
+```tsx
+import { EncryptedPersistence } from '@tovsa7/zerosync-client'
+
+const persistence = await EncryptedPersistence.open({ roomId, key: persistKey })
+// ... pass persistence directly to Room.join (vanilla SDK), or extend ZeroSyncProvider yourself.
+```
+
+The provider itself only exposes the high-level `persistKey` prop — for the low-level path, fall back to `@tovsa7/zerosync-client` directly.
 
 ---
 

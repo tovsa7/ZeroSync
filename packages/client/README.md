@@ -13,8 +13,9 @@ Add Google Docs-style multi-user editing, presence, and chat to any web app — 
 - ✅ Zero-knowledge server — keys never leave the browser
 - ✅ Peer-to-peer via WebRTC DataChannel, encrypted relay fallback
 - ✅ CRDT sync via Yjs — works with Tiptap, CodeMirror, Quill, ProseMirror, etc.
+- ✅ **Encrypted-at-rest persistence** (v0.2.0+) — Yjs state survives page reloads, IndexedDB row is ciphertext only
 - ✅ Self-hosted in one Docker command ([guide](https://github.com/tovsa7/ZeroSync/blob/main/SELF-HOSTED.md))
-- ✅ 141 tests including property-based tests (`fast-check`)
+- ✅ 230+ tests including property-based tests (`fast-check`)
 - ✅ SLSA provenance on every release, OpenSSF Best Practices badge
 
 ## Use cases
@@ -93,6 +94,80 @@ Browser A                 ZeroSync Server              Browser B
 
 Peers connect P2P by default. When P2P fails (NAT/firewall), the signaling server acts as an encrypted relay — it sees only opaque ciphertext blobs (max 64 KB, 30 s TTL). The server logs only SHA-256-hashed identifiers.
 
+## Encrypted-at-rest persistence
+
+Pages reload. Browsers crash. Without persistence, every session starts from
+zero. `EncryptedPersistence` keeps the merged Yjs state in IndexedDB, encrypted
+with a key derived from your `userSecret` but **independent of the wire
+roomKey**. When the tab reopens, the doc is restored from disk **before**
+`Room.join()` resolves — no flash of empty editor, no waiting on peers.
+
+```typescript
+import {
+  Room,
+  EncryptedPersistence,
+  deriveRoomKey,
+  derivePersistKey,
+} from '@tovsa7/zerosync-client'
+
+// Same userSecret yields two domain-separated keys via HKDF.
+const userSecret = crypto.getRandomValues(new Uint8Array(32))
+const [roomKey, persistKey] = await Promise.all([
+  deriveRoomKey(userSecret,    'my-room-id'),
+  derivePersistKey(userSecret, 'my-room-id'),
+])
+
+const persistence = await EncryptedPersistence.open({
+  roomId: 'my-room-id',
+  key:    persistKey,
+})
+
+const room = await Room.join({
+  serverUrl:  'wss://your-server/ws',
+  roomId:     'my-room-id',
+  roomKey,
+  peerId:     crypto.randomUUID(),
+  nonce:      btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))),
+  hmac:       '',
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  persistence,
+})
+
+// On unmount / page navigation:
+window.addEventListener('beforeunload', () => {
+  room.leave()         // flushes pending save inside CRDTSync.stop()
+  persistence.close()  // close AFTER leave() so the final flush lands
+})
+```
+
+**What it does:**
+
+- **Per-room IDB database** — name `zerosync-persistence-{roomId}`. Wipe one room without touching others: `indexedDB.deleteDatabase('zerosync-persistence-' + roomId)`.
+- **AES-256-GCM** — same wire format as message encryption (12-byte IV + ciphertext+tag). On-disk row is opaque bytes; nothing in IDB is plaintext.
+- **Debounced saves** — 500 ms window coalesces rapid edits into single writes. Local edits **and** remote merges (SYNC_RES) both trigger save, so on-disk state tracks the merged document, not just local changes.
+- **Flush on hide** — `visibilitychange → hidden` and `pagehide` flush pending saves immediately, surviving tab close and BFCache eviction.
+- **Restore failure recovery** — tampered row, wrong key, or corruption → load returns silently, sync continues with peer SYNC_RES, and the next save overwrites the bad row. No spinner, no broken state.
+
+### Domain separation
+
+Wire encryption and at-rest encryption use **independent keys** derived from the same `userSecret`:
+
+| Helper | HKDF `info` | Purpose |
+|--------|-------------|---------|
+| `deriveRoomKey(secret, roomId)` | `"zerosync-room:{roomId}"` | Encrypts WebRTC + relay traffic |
+| `derivePersistKey(secret, roomId)` | `"zerosync-persist:{roomId}"` | Encrypts IndexedDB rows |
+
+A leak of the on-disk key cannot decrypt wire traffic captured from the network, and a leak of the wire key cannot decrypt IndexedDB rows. Same `userSecret`, distinct cryptographic domains.
+
+### Lifecycle: caller owns it
+
+`Room.leave()` does **NOT** close `EncryptedPersistence`. You opened it, you close it. This lets you keep persistence around across multiple `Room.join()` cycles for the same room (e.g. signaling reconnects), or share state with a worker. Order matters:
+
+```typescript
+room.leave()         // flushes the final save (CRDTSync.stop → flushSave)
+persistence.close()  // then close the IDB connection
+```
+
 ## API
 
 ### `Room.join(opts)` → `Promise<Room>`
@@ -106,6 +181,7 @@ Peers connect P2P by default. When P2P fails (NAT/firewall), the signaling serve
 | `nonce` | `string` | Base64 random bytes for HELLO replay protection |
 | `hmac` | `string` | HMAC-SHA-256 of the HELLO message (`""` while opt-in) |
 | `iceServers` | `RTCIceServer[]` | ICE servers for WebRTC. Pass `[]` to disable STUN (same-network P2P only). |
+| `persistence` _(optional)_ | `EncryptedPersistence` | Encrypted-at-rest IndexedDB store. When set, stored state is loaded and applied to the doc **before** `Room.join` resolves; subsequent updates are saved on a 500 ms debounce. Caller owns lifecycle. |
 
 ### Room methods
 
@@ -121,7 +197,25 @@ Peers connect P2P by default. When P2P fails (NAT/firewall), the signaling serve
 
 ### `deriveRoomKey(secret, roomId)` → `Promise<CryptoKey>`
 
-Derives a non-extractable AES-256-GCM key via HKDF-SHA-256. Store `secret` (32 bytes), not the derived key.
+Derives a non-extractable AES-256-GCM key via HKDF-SHA-256 with `info="zerosync-room:{roomId}"`. Used for wire encryption. Store `secret` (32 bytes), not the derived key.
+
+### `derivePersistKey(secret, roomId)` → `Promise<CryptoKey>`
+
+Derives a non-extractable AES-256-GCM key via HKDF-SHA-256 with `info="zerosync-persist:{roomId}"`. Used for IndexedDB at-rest encryption. **Domain-separated** from `deriveRoomKey` — same `secret` + same `roomId` yields a different key.
+
+### `EncryptedPersistence`
+
+Per-room IndexedDB store with AES-256-GCM applied transparently before write and after read.
+
+| Method | Returns | Purpose |
+|--------|---------|---------|
+| `static open({ roomId, key })` | `Promise<EncryptedPersistence>` | Open or create the IDB database `zerosync-persistence-{roomId}`. |
+| `load()` | `Promise<Uint8Array \| null>` | Decrypt and return the stored Yjs state, or `null` if nothing has been saved yet. Throws on tampered / wrong-key / corrupted rows. |
+| `save(state)` | `Promise<void>` | Encrypt `state` and write to IDB. Resolves once the transaction commits. |
+| `clear()` | `Promise<void>` | Remove the stored row so subsequent `load()` returns `null`. |
+| `close()` | `void` | Close the IDB connection. Subsequent operations throw. Idempotent. |
+
+In normal use you don't call these directly — pass `persistence` to `Room.join` and `CRDTSync` handles load/save automatically. Direct calls are useful for tests, "Save and Close" UX, or wiping local state on logout.
 
 ## Self-hosting
 
