@@ -1,0 +1,13 @@
+{
+  "name": "zerosync-playwright-smoke",
+  "version": "0.2.0",
+  "type": "module",
+  "private": true,
+  "description": "Headless-browser smoke tests for ZeroSync — verify against a real signaling server + vite dev demo.",
+  "scripts": {
+    "test:persistence": "node persistence-smoke.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.59.1"
+  }
+}
