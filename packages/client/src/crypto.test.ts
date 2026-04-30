@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
-import { encrypt, decrypt, deriveRoomKey } from './crypto.js'
+import { encrypt, decrypt, deriveRoomKey, derivePersistKey } from './crypto.js'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -204,5 +204,60 @@ describe('deriveRoomKey', () => {
     const secret = crypto.getRandomValues(new Uint8Array(32))
     const key = await deriveRoomKey(secret, 'room-x')
     await expect(crypto.subtle.exportKey('raw', key)).rejects.toThrow()
+  })
+})
+
+// ── derivePersistKey ──────────────────────────────────────────────────────────
+
+describe('derivePersistKey', () => {
+  it('returns a CryptoKey usable for encrypt/decrypt', async () => {
+    const secret    = crypto.getRandomValues(new Uint8Array(32))
+    const key       = await derivePersistKey(secret, 'test-room-1')
+    const plaintext = new Uint8Array([1, 2, 3])
+    const ct        = await encrypt(key, plaintext)
+    expect(await decrypt(key, ct)).toEqual(plaintext)
+  })
+
+  it('same inputs produce interchangeable keys', async () => {
+    const secret = crypto.getRandomValues(new Uint8Array(32))
+    const k1     = await derivePersistKey(secret, 'room-abc')
+    const k2     = await derivePersistKey(secret, 'room-abc')
+    const ct     = await encrypt(k1, new Uint8Array([9, 8, 7]))
+    expect(await decrypt(k2, ct)).toEqual(new Uint8Array([9, 8, 7]))
+  })
+
+  it('different roomId produces different key material', async () => {
+    const secret = crypto.getRandomValues(new Uint8Array(32))
+    const k1     = await derivePersistKey(secret, 'room-A')
+    const k2     = await derivePersistKey(secret, 'room-B')
+    const ct     = await encrypt(k1, new Uint8Array([1, 2, 3]))
+    await expect(decrypt(k2, ct)).rejects.toThrow()
+  })
+
+  it('persistKey is non-extractable', async () => {
+    const secret = crypto.getRandomValues(new Uint8Array(32))
+    const key    = await derivePersistKey(secret, 'room-x')
+    await expect(crypto.subtle.exportKey('raw', key)).rejects.toThrow()
+  })
+
+  // ── Domain separation between roomKey and persistKey ──────────────────────
+
+  it('roomKey and persistKey are domain-separated for the same secret + roomId', async () => {
+    const secret     = crypto.getRandomValues(new Uint8Array(32))
+    const roomId     = 'room-shared'
+    const roomKey    = await deriveRoomKey(secret, roomId)
+    const persistKey = await derivePersistKey(secret, roomId)
+    const ct         = await encrypt(roomKey, new Uint8Array([1, 2, 3]))
+    // Cross-decrypt MUST fail — proves the keys are independent.
+    await expect(decrypt(persistKey, ct)).rejects.toThrow()
+  })
+
+  it('domain separation: ciphertext encrypted with persistKey is opaque to roomKey', async () => {
+    const secret     = crypto.getRandomValues(new Uint8Array(32))
+    const roomId     = 'room-shared'
+    const roomKey    = await deriveRoomKey(secret, roomId)
+    const persistKey = await derivePersistKey(secret, roomId)
+    const ct         = await encrypt(persistKey, new Uint8Array([4, 5, 6]))
+    await expect(decrypt(roomKey, ct)).rejects.toThrow()
   })
 })

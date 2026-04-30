@@ -1,6 +1,6 @@
 {
   "name": "@tovsa7/zerosync-react",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "React hooks for ZeroSync — end-to-end encrypted real-time collaboration",
   "license": "MIT",
   "keywords": [
@@ -42,7 +42,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "@tovsa7/zerosync-client": "^0.1.7",
+    "@tovsa7/zerosync-client": "^0.2.0",
     "react": "^18.0.0",
     "yjs": "^13.6.0"
   },

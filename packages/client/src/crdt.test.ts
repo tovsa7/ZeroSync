@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import * as fc from 'fast-check'
 import * as Y from 'yjs'
 import { CRDTSync } from './crdt.js'
 import { MessageType } from './transport.js'
+import type { EncryptedPersistence } from './persistence.js'
 
 // ── Transport mock ───────────────────────────────────────────────────────────
 
@@ -280,6 +281,284 @@ describe('PBT: Yjs update serialization', () => {
       ),
       { numRuns: 100 }
     )
+  })
+})
+
+// ── Persistence integration ──────────────────────────────────────────────────
+
+/**
+ * In-memory mock persistence — exposes the surface CRDTSync needs (load,
+ * save, close) without touching IndexedDB. The actual IDB roundtrip is
+ * covered in persistence.test.ts.
+ */
+function makeMemoryPersistence(initial: Uint8Array | null = null) {
+  let state:  Uint8Array | null = initial
+  let closed = false
+  return {
+    load:  vi.fn(async (): Promise<Uint8Array | null> => {
+      if (closed) throw new Error('closed')
+      return state
+    }),
+    save:  vi.fn(async (s: Uint8Array): Promise<void> => {
+      if (closed) throw new Error('closed')
+      state = s
+    }),
+    clear: vi.fn(async (): Promise<void> => { state = null }),
+    close: vi.fn((): void => { closed = true }),
+    getStoredState: () => state,
+  }
+}
+
+type MockPersistence = ReturnType<typeof makeMemoryPersistence>
+
+function asPersistence(mock: MockPersistence): EncryptedPersistence {
+  return mock as unknown as EncryptedPersistence
+}
+
+describe('CRDTSync persistence', () => {
+  beforeEach(() => { vi.useFakeTimers() })
+  afterEach(()  => { vi.useRealTimers() })
+
+  it('start() loads stored state and applies it to the doc', async () => {
+    // Build a stored state from a "previous session" doc.
+    const prevDoc = new Y.Doc()
+    prevDoc.getMap('data').set('persisted', 'value')
+    const stored = Y.encodeStateAsUpdate(prevDoc)
+
+    const persistence = makeMemoryPersistence(stored)
+    const doc         = new Y.Doc()
+    const transport   = makeTransportMock()
+    const sync = new CRDTSync({
+      doc,
+      transport:   transport as never,
+      roomKey:     makeFakeKey(),
+      persistence: asPersistence(persistence),
+    })
+
+    await sync.start()
+
+    expect(persistence.load).toHaveBeenCalledTimes(1)
+    expect(doc.getMap('data').get('persisted')).toBe('value')
+    sync.stop()
+  })
+
+  it('restore-applied update does NOT trigger broadcast (no echo to peers)', async () => {
+    const prevDoc = new Y.Doc()
+    prevDoc.getMap('m').set('k', 'v')
+    const stored = Y.encodeStateAsUpdate(prevDoc)
+
+    const persistence = makeMemoryPersistence(stored)
+    const doc         = new Y.Doc()
+    const transport   = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+    })
+
+    await sync.start()
+
+    expect(transport.broadcast).not.toHaveBeenCalled()
+    sync.stop()
+  })
+
+  it('restore-applied update does NOT schedule a save (would be redundant)', async () => {
+    const prevDoc = new Y.Doc()
+    prevDoc.getMap('m').set('k', 'v')
+    const stored = Y.encodeStateAsUpdate(prevDoc)
+
+    const persistence = makeMemoryPersistence(stored)
+    const doc         = new Y.Doc()
+    const transport   = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+    })
+    await sync.start()
+    persistence.save.mockClear()
+
+    // Advance past the debounce window — no save should fire from the restore.
+    vi.advanceTimersByTime(2000)
+    await vi.runAllTimersAsync()
+
+    expect(persistence.save).not.toHaveBeenCalled()
+    sync.stop()
+  })
+
+  it('start() returns null-load gracefully (empty doc, no error)', async () => {
+    const persistence = makeMemoryPersistence(null)
+    const doc         = new Y.Doc()
+    const transport   = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+    })
+
+    await expect(sync.start()).resolves.toBeUndefined()
+    expect(doc.getMap('data').size).toBe(0)
+    sync.stop()
+  })
+
+  it('start() swallows load failures so sync continues', async () => {
+    const persistence = makeMemoryPersistence(null)
+    persistence.load.mockRejectedValueOnce(new Error('decrypt failed'))
+
+    const doc       = new Y.Doc()
+    const transport = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+    })
+
+    // Should NOT throw — load failure is logged, not propagated.
+    await expect(sync.start()).resolves.toBeUndefined()
+    sync.stop()
+  })
+
+  it('local update schedules a save after debounce window', async () => {
+    const persistence = makeMemoryPersistence()
+    const doc         = new Y.Doc()
+    const transport   = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+      saveDebounceMs: 100,
+    })
+
+    await sync.start()
+    doc.getMap('data').set('k', 'v')
+
+    // Before debounce expires: no save yet.
+    expect(persistence.save).not.toHaveBeenCalled()
+
+    vi.advanceTimersByTime(100)
+    await vi.runAllTimersAsync()
+
+    expect(persistence.save).toHaveBeenCalledTimes(1)
+    sync.stop()
+  })
+
+  it('multiple rapid updates coalesce into a single debounced save', async () => {
+    const persistence = makeMemoryPersistence()
+    const doc         = new Y.Doc()
+    const transport   = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+      saveDebounceMs: 100,
+    })
+
+    await sync.start()
+    doc.getMap('data').set('a', 1)
+    doc.getMap('data').set('b', 2)
+    doc.getMap('data').set('c', 3)
+
+    vi.advanceTimersByTime(100)
+    await vi.runAllTimersAsync()
+
+    // All three edits were coalesced into one save.
+    expect(persistence.save).toHaveBeenCalledTimes(1)
+
+    // The saved state contains all three values.
+    const saved = persistence.save.mock.calls[0]![0] as Uint8Array
+    const verifyDoc = new Y.Doc()
+    Y.applyUpdate(verifyDoc, saved)
+    expect(verifyDoc.getMap('data').get('a')).toBe(1)
+    expect(verifyDoc.getMap('data').get('b')).toBe(2)
+    expect(verifyDoc.getMap('data').get('c')).toBe(3)
+    sync.stop()
+  })
+
+  it('remote update schedules a save (at-rest tracks merged doc)', async () => {
+    const persistence = makeMemoryPersistence()
+    const doc         = new Y.Doc()
+    const transport   = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+      saveDebounceMs: 100,
+    })
+
+    await sync.start()
+
+    const remoteDoc = new Y.Doc()
+    remoteDoc.getMap('data').set('from-remote', 'hello')
+    const update = Y.encodeStateAsUpdate(remoteDoc)
+    sync.handleMessage('peer-1', MessageType.UPDATE, update)
+
+    vi.advanceTimersByTime(100)
+    await vi.runAllTimersAsync()
+
+    expect(persistence.save).toHaveBeenCalledTimes(1)
+    sync.stop()
+  })
+
+  it('stop() flushes pending debounced save', async () => {
+    const persistence = makeMemoryPersistence()
+    const doc         = new Y.Doc()
+    const transport   = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+      saveDebounceMs: 1000,
+    })
+
+    await sync.start()
+    doc.getMap('data').set('k', 'v')
+
+    // Stop before the debounce window expires — flush should still fire.
+    sync.stop()
+    await vi.runAllTimersAsync()
+
+    expect(persistence.save).toHaveBeenCalledTimes(1)
+  })
+
+  it('stop() does NOT close the persistence (caller owns lifecycle)', async () => {
+    const persistence = makeMemoryPersistence()
+    const doc         = new Y.Doc()
+    const transport   = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+    })
+    await sync.start()
+    sync.stop()
+    expect(persistence.close).not.toHaveBeenCalled()
+  })
+
+  it('save failure does not throw (logged and swallowed)', async () => {
+    const persistence = makeMemoryPersistence()
+    persistence.save.mockRejectedValue(new Error('quota exceeded'))
+
+    const doc       = new Y.Doc()
+    const transport = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+      persistence: asPersistence(persistence),
+      saveDebounceMs: 50,
+    })
+    await sync.start()
+    doc.getMap('data').set('k', 'v')
+
+    // Should not throw despite save failure (logged + swallowed inside flushSave).
+    vi.advanceTimersByTime(50)
+    await vi.runAllTimersAsync()
+    expect(persistence.save).toHaveBeenCalledTimes(1)
+    sync.stop()
+  })
+
+  it('without persistence: behavior unchanged (no save, no load)', async () => {
+    const doc       = new Y.Doc()
+    const transport = makeTransportMock()
+    const sync = new CRDTSync({
+      doc, transport: transport as never, roomKey: makeFakeKey(),
+    })
+
+    await sync.start()
+    doc.getMap('data').set('k', 'v')
+
+    // No persistence → no debounced timer → broadcast still fires synchronously.
+    expect(transport.broadcast).toHaveBeenCalledTimes(1)
+    sync.stop()
   })
 })
 

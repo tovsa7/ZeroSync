@@ -9,6 +9,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] — 2026-04-30
+
+### Added
+- **Encrypted-at-rest persistence** (offline-first foundation)
+  - New `EncryptedPersistence` class — per-room IndexedDB store with
+    AES-256-GCM encryption applied transparently before write and after read.
+    On-disk row is ciphertext only; the server, devtools, and disk forensics
+    see only opaque blobs.
+  - New `derivePersistKey(userSecret, roomId)` — HKDF-SHA-256 with
+    `info="zerosync-persist:{roomId}"`, domain-separated from the wire
+    `roomKey`. A leak of the on-disk key cannot decrypt wire traffic and
+    vice versa.
+  - New `RoomOptions.persistence?: EncryptedPersistence` — opt-in field on
+    `Room.join`. When present, stored state is restored before `Room.join`
+    resolves; subsequent local + remote doc updates are saved on a 500 ms
+    debounce. `visibilitychange→hidden` and `pagehide` flush pending saves.
+  - In `@tovsa7/zerosync-react`: new `persistKey?: CryptoKey` prop on
+    `ZeroSyncProvider` — provider opens and closes the underlying
+    `EncryptedPersistence` automatically.
+  - `derivePersistKey` re-exported from `@tovsa7/zerosync-react` so React
+    consumers don't need to take a direct dependency on the client SDK.
+
+### Changed
+- `CRDTSync.start()` is now async — awaits persistence load before
+  resolving (no behaviour change when persistence is absent). `Room.join`
+  awaits this internally; external callers see `Room.join` resolve once the
+  doc is populated from disk.
+
+### Security
+- Wire-encryption and at-rest-encryption keys are independently derived;
+  storage compromise does not enable wire-traffic decryption.
+- Restore failure (tampered row, wrong key, corruption) is logged and
+  swallowed — sync continues with peer SYNC_RES rather than blocking on a
+  broken local cache.
+
+---
+
+## [Pre-0.2.0 Unreleased — security & infra]
+
 ### Security
 - Pin all GitHub Actions to commit SHAs to prevent supply-chain attacks
 - Add `permissions: read-all` to CI workflows (principle of least privilege)
@@ -55,7 +96,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/tovsa7/ZeroSync/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/tovsa7/ZeroSync/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/tovsa7/ZeroSync/compare/v0.1.7...v0.2.0
 [0.1.7]: https://github.com/tovsa7/ZeroSync/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/tovsa7/ZeroSync/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/tovsa7/ZeroSync/releases/tag/v0.1.5

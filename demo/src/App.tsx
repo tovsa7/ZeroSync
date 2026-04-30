@@ -17,6 +17,7 @@
 import { useCallback, useEffect, useMemo, useState, type FC, type ReactElement } from 'react'
 import {
   ZeroSyncProvider,
+  derivePersistKey,
   useConnectionStatus,
   useMyPresence,
   usePresence,
@@ -32,11 +33,18 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? 'ws://localhost:8080/ws'
 const ONBOARDING_KEY = 'zerosync_onboarding_done'
 
 interface RoomConfig {
-  roomId:  string
-  rawKey:  Uint8Array
-  roomKey: CryptoKey
-  peerId:  string
-  nonce:   string
+  roomId:     string
+  rawKey:     Uint8Array
+  roomKey:    CryptoKey
+  /**
+   * Domain-separated key for at-rest IndexedDB persistence. Derived via
+   * HKDF from the same userSecret as roomKey but with different `info`,
+   * so wire-encryption and storage-encryption are cryptographically
+   * independent.
+   */
+  persistKey: CryptoKey
+  peerId:     string
+  nonce:      string
 }
 
 // ── Hooks ───────────────────────────────────────────────────────────────────
@@ -147,13 +155,21 @@ export function App(): ReactElement {
       // at any time and joiners get a stable URL on reload.
       window.location.hash = `room=${roomId}&key=${base64urlEncode(rawKey)}`
 
-      const roomKey = await buildRoomKey(rawKey)
+      // Derive both keys from the same userSecret (rawKey). HKDF with
+      // different `info` strings yields cryptographically independent keys
+      // so a leak of the on-disk persistKey cannot decrypt wire traffic and
+      // vice versa.
+      const [roomKey, persistKey] = await Promise.all([
+        buildRoomKey(rawKey),
+        derivePersistKey(rawKey, roomId),
+      ])
       if (cancelled) return
 
       setConfig({
         roomId,
         rawKey,
         roomKey,
+        persistKey,
         peerId: crypto.randomUUID(),
         nonce:  generateNonce(),
       })
@@ -174,6 +190,7 @@ export function App(): ReactElement {
       serverUrl={SERVER_URL}
       roomId={config.roomId}
       roomKey={config.roomKey}
+      persistKey={config.persistKey}
       peerId={config.peerId}
       nonce={config.nonce}
       hmac="demo"

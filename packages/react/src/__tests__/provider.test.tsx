@@ -19,15 +19,23 @@ import * as Y from 'yjs'
 import { ZeroSyncProvider } from '../provider.js'
 import { ZeroSyncContext } from '../context.js'
 
-// Mock the client SDK. The Provider only uses Room.join; other SDK exports
-// are not touched here.
+// Mock the client SDK. The Provider uses Room.join and EncryptedPersistence.open;
+// other SDK exports are not touched here.
 vi.mock('@tovsa7/zerosync-client', () => ({
   Room: {
     join: vi.fn(),
   },
+  EncryptedPersistence: {
+    open: vi.fn(),
+  },
 }))
 
-import { Room, type RoomStatus, type StatusCallback } from '@tovsa7/zerosync-client'
+import {
+  Room,
+  EncryptedPersistence,
+  type RoomStatus,
+  type StatusCallback,
+} from '@tovsa7/zerosync-client'
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 
@@ -234,5 +242,150 @@ describe('ZeroSyncProvider', () => {
       mock.driveStatus('closed')
     })
     expect(screen.getByTestId('status').textContent).toBe('closed')
+  })
+})
+
+// ── persistKey integration ──────────────────────────────────────────────────
+
+describe('ZeroSyncProvider — persistKey', () => {
+  beforeEach(() => { vi.clearAllMocks() })
+  afterEach(()  => { cleanup() })
+
+  function makeMockPersistence() {
+    return {
+      load:  vi.fn(async () => null),
+      save:  vi.fn(async () => {}),
+      clear: vi.fn(async () => {}),
+      close: vi.fn(),
+    }
+  }
+
+  it('without persistKey: EncryptedPersistence.open is NOT called', async () => {
+    const mock = createMockRoom()
+    vi.mocked(Room.join).mockResolvedValue(mock.room as never)
+
+    render(
+      <ZeroSyncProvider {...baseOpts}>
+        <ContextProbe />
+      </ZeroSyncProvider>,
+    )
+
+    await flush()
+    expect(EncryptedPersistence.open).not.toHaveBeenCalled()
+    // Room.join called WITHOUT persistence.
+    const joinArgs = vi.mocked(Room.join).mock.calls[0]![0]
+    expect(joinArgs.persistence).toBeUndefined()
+  })
+
+  it('with persistKey: opens persistence and threads it into Room.join', async () => {
+    const mock        = createMockRoom()
+    const persistence = makeMockPersistence()
+    vi.mocked(Room.join).mockResolvedValue(mock.room as never)
+    vi.mocked(EncryptedPersistence.open).mockResolvedValue(persistence as never)
+
+    const fakeKey = {} as CryptoKey
+    render(
+      <ZeroSyncProvider {...baseOpts} persistKey={fakeKey}>
+        <ContextProbe />
+      </ZeroSyncProvider>,
+    )
+
+    await flush()
+
+    expect(EncryptedPersistence.open).toHaveBeenCalledWith({
+      roomId: baseOpts.roomId,
+      key:    fakeKey,
+    })
+    const joinArgs = vi.mocked(Room.join).mock.calls[0]![0]
+    expect(joinArgs.persistence).toBe(persistence)
+  })
+
+  it('with persistKey: closes persistence on unmount AFTER leave()', async () => {
+    const mock        = createMockRoom()
+    const persistence = makeMockPersistence()
+    vi.mocked(Room.join).mockResolvedValue(mock.room as never)
+    vi.mocked(EncryptedPersistence.open).mockResolvedValue(persistence as never)
+
+    const { unmount } = render(
+      <ZeroSyncProvider {...baseOpts} persistKey={{} as CryptoKey}>
+        <ContextProbe />
+      </ZeroSyncProvider>,
+    )
+
+    await flush()
+    unmount()
+
+    expect(mock.leaveCalled()).toBe(true)
+    expect(persistence.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('with persistKey: closes persistence if Room.join rejects', async () => {
+    const persistence = makeMockPersistence()
+    const onErr       = vi.fn()
+    vi.mocked(EncryptedPersistence.open).mockResolvedValue(persistence as never)
+    vi.mocked(Room.join).mockRejectedValue(new Error('conn failed'))
+
+    render(
+      <ZeroSyncProvider {...baseOpts} persistKey={{} as CryptoKey} onError={onErr}>
+        <ContextProbe />
+      </ZeroSyncProvider>,
+    )
+
+    await flush()
+
+    expect(onErr).toHaveBeenCalled()
+    expect(persistence.close).toHaveBeenCalledTimes(1)
+  })
+
+  it('with persistKey: closes persistence if unmounted before Room.join resolves', async () => {
+    const mock        = createMockRoom()
+    const persistence = makeMockPersistence()
+    vi.mocked(EncryptedPersistence.open).mockResolvedValue(persistence as never)
+
+    let resolveJoin: (r: unknown) => void = () => {}
+    const pending = new Promise<unknown>((res) => { resolveJoin = res })
+    vi.mocked(Room.join).mockReturnValue(pending as Promise<never>)
+
+    const { unmount } = render(
+      <ZeroSyncProvider {...baseOpts} persistKey={{} as CryptoKey}>
+        <ContextProbe />
+      </ZeroSyncProvider>,
+    )
+
+    // Wait for persistence.open to resolve, then unmount before Room.join.
+    await flush()
+    unmount()
+
+    // Now Room.join finally resolves with a Room instance.
+    resolveJoin(mock.room)
+    await flush()
+
+    // The late-arriving Room is leaved AND persistence is closed.
+    expect(mock.leaveCalled()).toBe(true)
+    expect(persistence.close).toHaveBeenCalled()
+  })
+
+  it('with persistKey: closes persistence if unmounted during EncryptedPersistence.open', async () => {
+    const persistence = makeMockPersistence()
+
+    let resolveOpen: (p: unknown) => void = () => {}
+    const pending = new Promise<unknown>((res) => { resolveOpen = res })
+    vi.mocked(EncryptedPersistence.open).mockReturnValue(pending as Promise<never>)
+
+    const { unmount } = render(
+      <ZeroSyncProvider {...baseOpts} persistKey={{} as CryptoKey}>
+        <ContextProbe />
+      </ZeroSyncProvider>,
+    )
+
+    // Unmount BEFORE EncryptedPersistence.open resolves.
+    unmount()
+    resolveOpen(persistence)
+    await flush()
+
+    // Late-arriving persistence should still be closed.
+    expect(persistence.close).toHaveBeenCalled()
+    // Room.join should NOT have been called (we cancelled before it.)
+    expect(Room.join).not.toHaveBeenCalled()
   })
 })

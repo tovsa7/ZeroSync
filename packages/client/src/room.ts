@@ -28,6 +28,7 @@ import { Transport, MessageType } from './transport.js'
 import { CRDTSync } from './crdt.js'
 import { PresenceManager } from './presence.js'
 import type { PresenceState, PresenceCallback } from './presence.js'
+import type { EncryptedPersistence } from './persistence.js'
 
 /** Signaling connection status surfaced by Room.onStatus(). */
 export type RoomStatus = 'connected' | 'reconnecting' | 'closed'
@@ -47,6 +48,18 @@ export interface RoomOptions {
    * See README for recommended public STUN server configuration.
    */
   iceServers: RTCIceServer[]
+  /**
+   * Optional encrypted-at-rest persistence. When provided:
+   * - Stored state is loaded and applied to the doc before Room.join resolves.
+   * - All subsequent doc changes (local + remote) are encrypted and saved
+   *   to IndexedDB on a 500 ms debounce.
+   * - Saves are flushed on visibilitychange→hidden, pagehide, and leave().
+   * - Caller owns the lifecycle: leave() does NOT call persistence.close().
+   *   Closing the persistence after leave() is the caller's responsibility.
+   * Use derivePersistKey(userSecret, roomId) for the key — never reuse
+   * the wire roomKey for at-rest encryption.
+   */
+  persistence?: EncryptedPersistence | undefined
 }
 
 export class Room {
@@ -143,12 +156,19 @@ export class Room {
       transport,
     })
 
-    crdtSync = new CRDTSync({ doc, transport, roomKey: opts.roomKey })
-    crdtSync.start()
+    crdtSync = new CRDTSync({
+      doc,
+      transport,
+      roomKey:     opts.roomKey,
+      persistence: opts.persistence,
+    })
 
     const room = new Room(doc, signaling, transport, crdtSync, presenceMgr)
 
-    // Wire up peer lifecycle events.
+    // Wire signaling event handlers BEFORE awaiting crdtSync.start() so that
+    // any peerJoined/peerLeft events fired during the persistence-restore
+    // window are handled correctly. addPeer is idempotent — peers seen via
+    // both events and signaling.peers() below are deduped inside Transport.
     signaling
       .on('peerJoined', ({ peerId }) => {
         transport.addPeer(peerId, isInitiator(peerId))
@@ -178,6 +198,11 @@ export class Room {
         // in case signaling fires close before leave() updates _status.
         if (room._status !== 'closed') room.setStatus('closed')
       })
+
+    // Restore persisted state (if persistence is configured) before resolving.
+    // Without persistence this is effectively synchronous — start() registers
+    // the doc.update listener and returns a resolved promise.
+    await crdtSync.start()
 
     // Connect to existing peers (initiator determined by lexicographic order).
     // SYNC_REQ will fire via onPeerConnected once each DataChannel opens.

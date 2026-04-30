@@ -13,6 +13,11 @@
  * - deriveRoomKey(userSecret, roomId): HKDF-SHA-256,
  *   info="zerosync-room:{roomId}", salt=empty, len=32.
  *   Key is non-extractable. Callers cannot provide raw key bytes.
+ * - derivePersistKey(userSecret, roomId): HKDF-SHA-256,
+ *   info="zerosync-persist:{roomId}", salt=empty, len=32.
+ *   Domain-separated from the wire roomKey: same userSecret, different info,
+ *   different output. Use for at-rest IndexedDB persistence; never reuse
+ *   the wire roomKey for storage encryption.
  */
 
 const AES_GCM = 'AES-GCM'
@@ -84,17 +89,48 @@ export async function deriveRoomKey(
   userSecret: Uint8Array,
   roomId: string
 ): Promise<CryptoKey> {
-  const ikm = await crypto.subtle.importKey('raw', userSecret.buffer.slice(userSecret.byteOffset, userSecret.byteOffset + userSecret.byteLength) as ArrayBuffer, 'HKDF', false, ['deriveKey'])
+  return deriveAes256GcmKey(userSecret, 'zerosync-room:' + roomId)
+}
+
+/**
+ * Derives a non-extractable AES-256-GCM persistKey via HKDF-SHA-256.
+ *
+ * Spec:
+ * - ikm  = userSecret (same 32 random bytes used for deriveRoomKey)
+ * - salt = empty
+ * - info = "zerosync-persist:" + roomId
+ * - len  = 32 bytes
+ * - Key is non-extractable — never leaves client memory.
+ *
+ * Domain separation: same ikm + roomId yields a different key from
+ * deriveRoomKey. The wire-encryption key and the at-rest-encryption key
+ * are independent — compromise of one does not compromise the other.
+ */
+export async function derivePersistKey(
+  userSecret: Uint8Array,
+  roomId: string
+): Promise<CryptoKey> {
+  return deriveAes256GcmKey(userSecret, 'zerosync-persist:' + roomId)
+}
+
+async function deriveAes256GcmKey(userSecret: Uint8Array, info: string): Promise<CryptoKey> {
+  const ikm = await crypto.subtle.importKey(
+    'raw',
+    userSecret.buffer.slice(userSecret.byteOffset, userSecret.byteOffset + userSecret.byteLength) as ArrayBuffer,
+    'HKDF',
+    false,
+    ['deriveKey'],
+  )
   return crypto.subtle.deriveKey(
     {
       name: 'HKDF',
       hash: 'SHA-256',
       salt: new Uint8Array(0),
-      info: new TextEncoder().encode('zerosync-room:' + roomId),
+      info: new TextEncoder().encode(info),
     },
     ikm,
     { name: AES_GCM, length: 256 },
-    false, // non-extractable — invariant: roomKey never leaves client memory
+    false, // non-extractable — invariant: derived keys never leave client memory
     ['encrypt', 'decrypt'],
   )
 }
