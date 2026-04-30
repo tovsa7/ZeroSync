@@ -22,7 +22,7 @@ Add Google Docs-style multi-user editing, presence, and chat to any web app — 
 - **Open-source client** — MIT licensed, auditable, no proprietary crypto. Server is BSL 1.1 (free for dev/test, paid in production).
 - **Real React hooks** — `@tovsa7/zerosync-react` for declarative integration (`useYText`, `usePresence`, `useMyPresence` …). Works with Tiptap, CodeMirror, Quill via standard Yjs bindings.
 - **Encrypted-at-rest persistence** (v0.2.0+) — opt-in IndexedDB store keyed by a domain-separated derivative of your `userSecret`. Doc state survives reload before `Room.join` resolves; the on-disk row is ciphertext only.
-- **Comprehensive test suite** — 230+ property-based + integration tests + headless-browser E2E for persistence. OpenSSF Best Practices badge. SLSA provenance on every npm release.
+- **Comprehensive test suite** — property-based via `fast-check`, integration tests, and headless-browser E2E (persistence reload, ciphertext-on-disk, IV randomness). OpenSSF Best Practices badge. SLSA provenance on every npm release.
 
 ## Use cases
 

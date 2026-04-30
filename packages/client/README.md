@@ -15,7 +15,7 @@ Add Google Docs-style multi-user editing, presence, and chat to any web app — 
 - ✅ CRDT sync via Yjs — works with Tiptap, CodeMirror, Quill, ProseMirror, etc.
 - ✅ **Encrypted-at-rest persistence** (v0.2.0+) — Yjs state survives page reloads, IndexedDB row is ciphertext only
 - ✅ Self-hosted in one Docker command ([guide](https://github.com/tovsa7/ZeroSync/blob/main/SELF-HOSTED.md))
-- ✅ 230+ tests including property-based tests (`fast-check`)
+- ✅ Comprehensive test suite — property-based via `fast-check`, integration, and headless-browser E2E
 - ✅ SLSA provenance on every release, OpenSSF Best Practices badge
 
 ## Use cases
