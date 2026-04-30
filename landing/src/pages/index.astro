@@ -6,10 +6,14 @@ import UseCases     from '../components/UseCases.astro'
 import QuickStart   from '../components/QuickStart.astro'
 import HowItWorks   from '../components/HowItWorks.astro'
 import Comparison   from '../components/Comparison.astro'
-import Pricing      from '../components/Pricing.astro'
 import FAQ          from '../components/FAQ.astro'
 import ForCompanies from '../components/ForCompanies.astro'
 import Footer       from '../components/Footer.astro'
+
+// Pricing component is intentionally not rendered during the Apache 2.0
+// open-core transition. The signaling server is now Apache 2.0; the paid
+// enterprise plugin (admin dashboard, SSO, audit log) is in development.
+// Re-introduce <Pricing /> once the plugin and tier definitions are real.
 ---
 
 <Base>
@@ -20,7 +24,6 @@ import Footer       from '../components/Footer.astro'
     <QuickStart />
     <HowItWorks />
     <Comparison />
-    <Pricing />
     <FAQ />
     <ForCompanies />
   </main>

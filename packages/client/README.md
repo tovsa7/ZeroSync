@@ -246,12 +246,6 @@ Full threat model + disclosure process: [SECURITY.md](https://github.com/tovsa7/
 Requires Web Crypto API, WebRTC DataChannel, and WebSocket.
 Chrome 89+, Firefox 78+, Safari 15+, Edge 89+.
 
-## Pricing
-
-Open-core model: client SDK is MIT, signaling server is BSL 1.1 (free for dev/test, paid for production).
-
-See [pricing tiers](https://github.com/tovsa7/ZeroSync#pricing) on the main repo — from Community (free, dev/test) to Enterprise ($25K+/yr, unlimited + SLA).
-
 ## License
 
 MIT — see [LICENSE](../../LICENSE).

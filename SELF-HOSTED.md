@@ -58,8 +58,8 @@ Edit `.env`:
 
 ```bash
 ZEROSYNC_DOMAIN=sync.example.com   # your domain
-ZEROSYNC_LICENSE_KEY=              # leave empty for Free tier
-ZEROSYNC_LICENSE_SECRET=           # required only with a license key
+ZEROSYNC_LICENSE_KEY=              # leave empty — reserved for future enterprise plugin
+ZEROSYNC_LICENSE_SECRET=           # leave empty — reserved for future enterprise plugin
 ```
 
 Make sure your DNS A record for `sync.example.com` points to your server's IP before starting — Caddy needs to complete the ACME challenge.
@@ -113,30 +113,24 @@ configurations.
 
 ---
 
-## License tiers
+## License
 
-The server runs on the **Community tier** by default — no license key required,
-no enforced room or peer limits. Community tier is intended for non-production
-use (development, OSS, evaluation); production deployments should hold a paid
-tier license.
+The signaling server is **Apache 2.0**. The encrypted relay node is **Apache 2.0**.
+Self-host both for free, in any environment, including production. No license
+keys, no phone-home, no telemetry, no per-room or per-peer limits enforced at
+runtime.
 
-Paid tiers (Startup / Team / Business / Enterprise — see the [Pricing page](https://tovsa7.github.io/ZeroSync/#pricing))
-are billed by team size, not by infrastructure metrics. Headcount is a
-contractual term, audited via the same self-attestation mechanism most B2B
-SaaS uses; the server does not count humans at runtime.
+The `ZEROSYNC_LICENSE_KEY` and `ZEROSYNC_LICENSE_SECRET` env vars from the
+`.env.example` file are reserved for a future enterprise plugin — leave them
+empty to run the open-source server. The server starts and runs identically
+with or without these set.
 
-To install a license key, contact [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me).
-Keys are offline-verified HS256 JWTs — no network calls, no phone-home, no
-telemetry. Set them in `.env`:
-
-```bash
-ZEROSYNC_LICENSE_KEY=eyJ...   # JWT issued by ZeroSync
-ZEROSYNC_LICENSE_SECRET=...   # signing secret shipped alongside the key
-```
-
-Self-hosted operators who want a soft cap on rooms or peers (for their own
-infrastructure protection, not pricing) can issue a custom-limited key via
-`go run ./cmd/keygen -tier <tier> -customer <id> -days <n> -max-rooms <N> -max-peers <N>`.
+A paid enterprise plugin offering admin dashboard, SSO/SAML, audit log
+retention, and compliance reports is in development. It will install
+alongside the Apache 2.0 server (not replace it) and require a license key
+for the plugin's premium features only. Contact
+[contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) to be notified
+when it ships, or to discuss design-partner terms.
 
 ---
 

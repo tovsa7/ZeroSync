@@ -8,9 +8,9 @@
 
 **End-to-end encrypted real-time collaboration SDK. Self-hosted in one Docker command.**
 
-Add Google Docs-style multi-user editing, presence, and chat to any web app — where your server mathematically cannot read plaintext. Built on WebRTC + Yjs + AES-256-GCM via the browser's Web Crypto API. Client SDK is MIT; signaling server is BSL 1.1 (free for dev/test, paid for production).
+Add Google Docs-style multi-user editing, presence, and chat to any web app — where your server mathematically cannot read plaintext. Built on WebRTC + Yjs + AES-256-GCM via the browser's Web Crypto API. Client SDK + React hooks are MIT; signaling server is Apache 2.0.
 
-**[Try the demo →](https://tovsa7.github.io/ZeroSync)** · [Pricing](#pricing) · [Self-hosting](SELF-HOSTED.md)
+**[Try the demo →](https://tovsa7.github.io/ZeroSync)** · [Self-hosting](SELF-HOSTED.md)
 
 ---
 
@@ -19,7 +19,7 @@ Add Google Docs-style multi-user editing, presence, and chat to any web app — 
 - **Zero-knowledge server** — room keys live only in the browser. The server sees hashed identifiers and opaque ciphertext. Even under subpoena, there is nothing to disclose.
 - **Architecture supports regulated workflows** — HIPAA technical safeguards, attorney-client privilege, GDPR data-minimization by design. (Not certified — architecture enables your own compliance program.)
 - **Self-hosted** — run on your own Hetzner / AWS / bare metal via one Docker image. No vendor-cloud dependency.
-- **Open-source client** — MIT licensed, auditable, no proprietary crypto. Server is BSL 1.1 (free for dev/test, paid in production).
+- **Fully open-source** — Client SDK + React hooks are MIT, signaling server is Apache 2.0. Auditable, no proprietary crypto, no license fees for self-hosting.
 - **Real React hooks** — `@tovsa7/zerosync-react` for declarative integration (`useYText`, `usePresence`, `useMyPresence` …). Works with Tiptap, CodeMirror, Quill via standard Yjs bindings.
 - **Encrypted-at-rest persistence** (v0.2.0+) — opt-in IndexedDB store keyed by a domain-separated derivative of your `userSecret`. Doc state survives reload before `Room.join` resolves; the on-disk row is ciphertext only.
 - **Comprehensive test suite** — property-based via `fast-check`, integration tests, and headless-browser E2E (persistence reload, ciphertext-on-disk, IV randomness). OpenSSF Best Practices badge. SLSA provenance on every npm release.
@@ -138,27 +138,9 @@ Full threat model + disclosure process: [`SECURITY.md`](https://github.com/tovsa
 | Self-hosted | ✅ one Docker | ❌ cloud only | ✅ | ✅ |
 | Zero-knowledge server | ✅ | ❌ | ❌ | ❌ |
 | Open-source client | MIT | Proprietary | MIT | MPL-2.0 |
-| Production license | BSL 1.1 self-hosted | SaaS subscription | Free | Free + paid cloud |
+| Open-source server | Apache 2.0 | — (proprietary cloud) | MIT | MPL-2.0 |
 | CRDT sync | Yjs | Proprietary | Yjs | Custom CoJSON |
 | React hooks | ✅ | ✅ | community | ✅ |
-
-## Pricing
-
-Priced by team size. No per-room or per-peer limits — they conflicted with the privacy positioning.
-
-| Tier | Price | For | Email SLA |
-|------|-------|-----|-----------|
-| **Community** | Free | Non-production · OSS · evaluation | GitHub Discussions |
-| **Startup** | $99/mo or $990/yr | Companies up to 10 people | 3 business days |
-| **Team** | $399/mo or $3,990/yr | Companies up to 50 people | 1 business day |
-| **Business** | $1,499/mo or $14,990/yr | Companies 50+ people · BAA discussion | Same-day, working hours |
-| **Enterprise** | Talk to us | Custom contracts · signed BAA / DPA | Negotiated |
-
-Annual = 2 months free. Self-hosted only — no managed cloud. Headcount tiers are honor-system with the standard B2B audit clause; the server can't count humans without breaking the privacy story.
-
-Contact [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) for Enterprise terms or signed DPA / BAA.
-
----
 
 ## Self-hosting
 
@@ -168,7 +150,7 @@ Run your own signaling server:
 docker run -p 8080:8080 ghcr.io/tovsa7/zerosync-server:latest
 ```
 
-For production (auto-TLS via Caddy, multi-peer relay, license enforcement), see the [self-hosted guide](SELF-HOSTED.md).
+For production (auto-TLS via Caddy, encrypted relay fallback for strict NATs), see the [self-hosted guide](SELF-HOSTED.md).
 
 Point the SDK at your server:
 
@@ -261,21 +243,21 @@ docs/              Protocol + architecture + security documentation
 
 Running ZeroSync in production? I'm actively working with design partners building HIPAA/GDPR-sensitive collaboration apps. If you need:
 
-- Production license for the signaling server (BSL → commercial)
 - Direct support from the maintainer
 - Priority on feature requests and roadmap input
 - Help with self-hosted deployment
+- Custom integrations or audit-readiness consultation
 
 Email [contact.zerosync@proton.me](mailto:contact.zerosync@proton.me) with a short description of your use case.
 
-Early-stage design partners get meaningful discounts in exchange for feedback and, optionally, a case study.
+A paid enterprise plugin (admin dashboard, SSO, audit log) is in development — reach out if you'd like to be notified when it ships, or to discuss design-partner terms with grandfathered pricing.
 
 ---
 
 ## License
 
 Client SDK + React hooks: [MIT](LICENSE)
-Signaling server + relay: BSL 1.1 — free for dev/test, paid for production (see [Pricing](#pricing))
+Signaling server + relay: Apache 2.0 — see the [server repository](https://github.com/tovsa7/zerosync-self-hosted). Fully open-source. No production license fees.
 
 ---
 
