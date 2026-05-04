@@ -147,7 +147,8 @@ section[class*="border-t"].border-neutral-900::before {
   position: relative;
   isolation: isolate;
 }
-.ambient-glow::before {
+/* Use ::after so it doesn't clobber the ::before-based section divider above. */
+.ambient-glow::after {
   content: '';
   position: absolute;
   top: -5%;
