@@ -225,7 +225,7 @@ Full docs + Tiptap / CodeMirror / cursor-presence + persistence examples: [`pack
 | At-rest encryption | Optional IndexedDB store, ciphertext only, per-room database |
 | Server visibility | Hashed room/peer IDs and ICE candidates only |
 | Peer auth | AES-GCM challenge-response handshake on DataChannel open |
-| Relay blobs | Max 64 KB · TTL 30 s · opaque ciphertext · ships as `ghcr.io/tovsa7/zerosync-relay` |
+| Relay blobs | Max 64 KB · opaque ciphertext · forwarded in-memory by the signaling server when P2P fails |
 | Third-party crypto | None — `crypto.subtle` only |
 
 The room key is derived client-side and never leaves the browser. Even under a court order, the server cannot provide document contents — it does not possess the keys.
@@ -265,7 +265,7 @@ A paid enterprise plugin (admin dashboard, SSO, audit log) is in development —
 
 Client SDK + React hooks ([`@tovsa7/zerosync-client`](https://www.npmjs.com/package/@tovsa7/zerosync-client), [`@tovsa7/zerosync-react`](https://www.npmjs.com/package/@tovsa7/zerosync-react)): **MIT** — see [LICENSE](LICENSE).
 
-Signaling server + relay (`ghcr.io/tovsa7/zerosync-server`, `ghcr.io/tovsa7/zerosync-relay`): **Apache 2.0** — see the [server repository](https://github.com/tovsa7/zerosync-self-hosted).
+Signaling server (`ghcr.io/tovsa7/zerosync-server`): **Apache 2.0** — see the [server repository](https://github.com/tovsa7/zerosync-self-hosted).
 
 Fully open-source. No production license fees. Forever.
 

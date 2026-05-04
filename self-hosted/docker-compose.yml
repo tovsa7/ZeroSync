@@ -2,13 +2,8 @@
 #
 # Deploys the ZeroSync signaling server + reverse proxy with auto-TLS.
 #
-#   - zerosync  — Go signaling server (ICE/SDP exchange between peers)
+#   - zerosync  — Go signaling server (also relays encrypted blobs in-memory)
 #   - caddy     — reverse proxy with automatic TLS via Let's Encrypt
-#
-# Note: encrypted relay fallback for strict NATs is shipped as a separate
-#       service (ghcr.io/tovsa7/zerosync-relay). This compose file deploys
-#       the signaling-only server. To enable relay, add a zerosync-relay
-#       service to this file with SIGNALING_URL + ROOM_ID env vars.
 #
 # Prerequisites:
 #   - Docker >= 24 and Docker Compose >= 2.20
@@ -17,7 +12,7 @@
 #
 # Usage:
 #   1. cp .env.example .env
-#   2. Edit .env — set ZEROSYNC_DOMAIN and optionally ZEROSYNC_LICENSE_KEY
+#   2. Edit .env — set ZEROSYNC_DOMAIN
 #   3. docker compose up -d
 #   4. curl https://your.domain.com/health
 
@@ -30,8 +25,6 @@ services:
       - "127.0.0.1:8080:8080"
     environment:
       - GOMAXPROCS=${GOMAXPROCS:-2}
-      - ZEROSYNC_LICENSE_KEY=${ZEROSYNC_LICENSE_KEY}
-      - ZEROSYNC_LICENSE_SECRET=${ZEROSYNC_LICENSE_SECRET}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
       interval: 30s

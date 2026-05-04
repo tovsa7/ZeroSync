@@ -58,8 +58,6 @@ Edit `.env`:
 
 ```bash
 ZEROSYNC_DOMAIN=sync.example.com   # your domain
-ZEROSYNC_LICENSE_KEY=              # leave empty — reserved for future enterprise plugin
-ZEROSYNC_LICENSE_SECRET=           # leave empty — reserved for future enterprise plugin
 ```
 
 Make sure your DNS A record for `sync.example.com` points to your server's IP before starting — Caddy needs to complete the ACME challenge.
@@ -95,30 +93,23 @@ const room = await Room.join({
 
 | Image | Description |
 |-------|-------------|
-| `ghcr.io/tovsa7/zerosync-server:latest` | Signaling server (ICE/SDP exchange) |
-| `ghcr.io/tovsa7/zerosync-relay:latest`  | Encrypted relay node — optional, for strict-NAT / corporate-proxy environments where peer-to-peer WebRTC fails |
+| `ghcr.io/tovsa7/zerosync-server:latest` | Signaling server (ICE/SDP exchange + in-memory encrypted blob forwarding) |
 
 Multi-arch (`linux/amd64`, `linux/arm64`) built from source on every release.
 
-The relay node joins the signaling server as a special peer of type `"relay"`,
-forwards opaque ciphertext blobs (≤64 KB each) between users that cannot
-establish direct WebRTC, and never possesses any room key — it sees only
-encrypted bytes. Logs use SHA-256-hashed identifiers; no plaintext IDs are
-emitted. Health probe at `:8081/health`.
-
-To opt in, add the relay service to your compose file (one process per room
-you want covered) and set `SIGNALING_URL` and `ROOM_ID` env vars. Most
-deployments do not need this — direct WebRTC works for the majority of NAT
-configurations.
+When direct WebRTC fails (strict NAT, corporate proxy), the signaling server
+itself forwards opaque ciphertext blobs (≤64 KB each) between currently
+connected peers in the same room. The server never possesses any room key —
+it sees only encrypted bytes. Logs use SHA-256-hashed identifiers; no
+plaintext IDs are emitted.
 
 ---
 
 ## License
 
-The signaling server is **Apache 2.0**. The encrypted relay node is **Apache 2.0**.
-Self-host both for free, in any environment, including production. No license
-keys, no phone-home, no telemetry, no per-room or per-peer limits enforced at
-runtime.
+The signaling server is **Apache 2.0**. Self-host for free, in any
+environment, including production. No license keys, no phone-home, no
+telemetry, no per-room or per-peer limits enforced at runtime.
 
 The `ZEROSYNC_LICENSE_KEY` and `ZEROSYNC_LICENSE_SECRET` env vars from the
 `.env.example` file are reserved for a future enterprise plugin — leave them
@@ -151,5 +142,3 @@ Ensure ports 80 and 443 are open and DNS is propagated before starting. Check Ca
 **Health check failing**  
 Wait 30 seconds after first start for the signaling server to become healthy. Check logs: `docker compose logs zerosync`.
 
-**Server won't start with a license key**  
-Verify `ZEROSYNC_LICENSE_SECRET` is set and at least 32 characters. Both variables must be set together.

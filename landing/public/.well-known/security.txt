@@ -19,8 +19,8 @@ Policy: https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md
 # reasonable timeline for remediation. Please do not open public GitHub
 # issues for security vulnerabilities.
 #
-# Scope includes the signaling server, relay node, and both client
-# packages (@tovsa7/zerosync-client, @tovsa7/zerosync-react).
+# Scope includes the signaling server and both client packages
+# (@tovsa7/zerosync-client, @tovsa7/zerosync-react).
 #
 # Out of scope:
 #   - Third-party dependencies (report to upstream maintainers)

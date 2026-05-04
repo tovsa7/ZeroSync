@@ -25,10 +25,10 @@ this document:
 | Key material exposure | Room keys are derived client-side (HKDF-SHA-256) and never transmitted to the server. The server cannot decrypt data — not after a breach, not under legal compulsion. |
 | Metadata exposure | Only SHA-256-hashed room IDs and peer IDs appear in server logs. Connection IP addresses are hashed before logging. |
 | Retention of content | Zero. The server persists no document content to disk under any circumstance. |
-| Retention of metadata | 30 days for hashed connection logs; session-duration + 60 s GC for room/peer registry; 30 s TTL for encrypted relay blobs. |
+| Retention of metadata | 30 days for hashed connection logs; session-duration + 60 s GC for room/peer registry; encrypted blobs forwarded in-memory between connected peers and not persisted to disk. |
 
 These guarantees are enforced by code, not policy. The audit path:
-`packages/client/src/crypto.ts` · `packages/client/src/transport.ts` · `server/internal/signaling/hash.go` · `server/internal/relay/`.
+`packages/client/src/crypto.ts` · `packages/client/src/transport.ts` (this repo) · `signaling/hash.go` · `relay/store.go` (in [zerosync-self-hosted](https://github.com/tovsa7/zerosync-self-hosted)).
 
 ---
 
@@ -64,7 +64,7 @@ support:
 ### §164.312(e)(1) — Transmission Security
 | Required implementation | ZeroSync support |
 |------------------------|------------------|
-| Guard against unauthorized access to ePHI transmitted over networks | Dual-layer encryption: AES-256-GCM application layer + DTLS-SRTP (WebRTC). Planned relay fallback will use TLS 1.2+ for opaque-ciphertext transit. Server operators cannot intercept content even with access to TLS private keys. |
+| Guard against unauthorized access to ePHI transmitted over networks | Dual-layer encryption: AES-256-GCM application layer + DTLS-SRTP (WebRTC). When direct WebRTC fails, the signaling server forwards opaque ciphertext over TLS 1.2+ (WSS). Server operators cannot intercept content even with access to TLS private keys. |
 
 **Business Associate Agreement (BAA)**: because ZeroSync is self-hosted, the
 vendor (ZeroSync Labs) has no access to customer PHI and is not a HIPAA
@@ -90,7 +90,7 @@ first place. This goes beyond traditional "policy-based" minimization.
 - Identifiers: hashed with SHA-256 before any logging
 - Presence data (user names, cursor positions): also end-to-end encrypted
 - Retention: bounded by code (30 d hashed-metadata log, no content
-  persistence; planned relay fallback will enforce 30 s TTL on transit blobs)
+  persistence; encrypted blobs forwarded in-memory only, never written to disk)
 
 ### Article 32 — Security of processing
 The pseudonymization and encryption of personal data, plus integrity and
@@ -158,7 +158,7 @@ The signaling server logs operational events for service-reliability purposes:
 |-----------|-------------|-----------|
 | Connection open/close | SHA-256-hashed client IP, SHA-256-hashed room/peer ID, timestamp | 30 days |
 | Room lifecycle (create, GC) | SHA-256-hashed room ID, peer count, timestamp | 30 days |
-| Relay blob transit | Size, timestamp, SHA-256-hashed sender ID (no content ever — relay has no roomKey) | 30 days |
+| Encrypted blob transit (in-memory broadcast) | Size, timestamp, SHA-256-hashed sender ID (no content ever — server has no roomKey) | 30 days |
 | Authentication failures | Error code, SHA-256-hashed peer ID, timestamp | 30 days |
 
 Logs are written to the container's stderr and rotated by standard logging

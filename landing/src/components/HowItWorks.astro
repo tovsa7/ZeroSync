@@ -10,7 +10,7 @@ const bullets = [
   { label: 'Signaling-only server', body: 'Exchanges ICE candidates / SDP between peers so they can find each other — then gets out of the way.' },
   { label: 'Zero-knowledge server', body: 'Holds no keys, logs only SHA-256-hashed room / peer IDs.' },
   { label: 'Mutual peer auth', body: 'AES-GCM challenge-response on DataChannel open — proves key possession without transmission.' },
-  { label: 'Planned: encrypted relay fallback', body: 'For strict NATs, a future TURN-like mode will forward opaque ciphertext — server still cannot decrypt.' },
+  { label: 'Encrypted blob fallback', body: 'When direct WebRTC fails, the signaling server forwards opaque ciphertext between connected peers in-memory — server still cannot decrypt.' },
 ]
 ---
 
