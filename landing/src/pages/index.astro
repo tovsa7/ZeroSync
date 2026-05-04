@@ -10,10 +10,12 @@ import FAQ          from '../components/FAQ.astro'
 import ForCompanies from '../components/ForCompanies.astro'
 import Footer       from '../components/Footer.astro'
 
-// Pricing component is intentionally not rendered during the Apache 2.0
-// open-core transition. The signaling server is now Apache 2.0; the paid
-// enterprise plugin (admin dashboard, SSO, audit log) is in development.
-// Re-introduce <Pricing /> once the plugin and tier definitions are real.
+// No pricing section on the page during the Apache 2.0 open-core transition.
+// The signaling server is Apache 2.0 (free, forever); the paid enterprise
+// plugin (admin dashboard, SSO, audit log, compliance reports) is in
+// development. Pricing strategy lives in the private vault — a Pricing
+// component will be written from scratch when the plugin ships and tier
+// numbers are locked from design-partner conversations.
 ---
 
 <Base>
