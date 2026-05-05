@@ -2,10 +2,15 @@
 
 ## Supported Versions
 
+`@tovsa7/zerosync-client` and `@tovsa7/zerosync-react`:
+
 | Version | Supported |
 |---------|-----------|
-| 0.1.x (latest) | ✅ |
+| 0.2.x (latest) | ✅ Active maintenance + security fixes |
+| 0.1.x | 🟡 Security fixes only — please upgrade to 0.2.x |
 | < 0.1.0 | ❌ |
+
+The signaling server lives in a separate repository ([github.com/tovsa7/zerosync-self-hosted](https://github.com/tovsa7/zerosync-self-hosted), Apache 2.0) with its own [SECURITY.md](https://github.com/tovsa7/zerosync-self-hosted/blob/main/SECURITY.md). Server vulnerabilities should be reported there.
 
 ## Reporting a Vulnerability
 
@@ -20,10 +25,12 @@ Include in your report:
 - Potential impact
 - Suggested fix (optional)
 
-You will receive a response within **72 hours**. If the issue is confirmed, we will:
-1. Work on a fix privately
-2. Release a patched version
-3. Publish a security advisory
+We aim to acknowledge reports on a best-effort basis, typically within a few business days. If the issue is confirmed, the workflow is:
+1. Fix developed privately
+2. Patched version released
+3. Public security advisory published
+
+For active exploitation or imminent disclosure pressure, prefix the email subject with `[URGENT]`.
 
 ## Security Model
 
@@ -45,6 +52,8 @@ A fresh random IV is generated for every encryption call. IV reuse is a critical
 | In scope | Out of scope |
 |----------|--------------|
 | `@tovsa7/zerosync-client` SDK | Demo application UI bugs |
-| Cryptographic implementation | Self-hosted infrastructure config |
-| WebRTC transport security | Third-party dependencies (report upstream) |
-| Key derivation logic | |
+| `@tovsa7/zerosync-react` hooks | Self-hosted infrastructure config |
+| Cryptographic implementation (AES-GCM, HKDF, mutual peer auth) | Third-party dependencies (report upstream) |
+| Key derivation logic — wire `roomKey` and at-rest `persistKey` | Signaling server findings — report in [zerosync-self-hosted](https://github.com/tovsa7/zerosync-self-hosted/security) |
+| WebRTC transport security | |
+| Encrypted-at-rest IndexedDB persistence (v0.2.0+) | |
