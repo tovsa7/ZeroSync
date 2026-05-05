@@ -12,3 +12,51 @@ updates:
           - "yjs"
           - "y-protocols"
           - "lib0"
+
+  - package-ecosystem: npm
+    directory: /packages/react
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      yjs-ecosystem:
+        patterns:
+          - "yjs"
+          - "y-protocols"
+          - "lib0"
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+          - "@testing-library/*"
+
+  - package-ecosystem: npm
+    directory: /demo
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: npm
+    directory: /landing
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: npm
+    directory: /.playwright-smoke
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
