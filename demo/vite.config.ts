@@ -7,8 +7,14 @@ export default defineConfig({
   // or '/' for custom domain / local dev.
   base: process.env.VITE_BASE_PATH ?? '/',
   resolve: {
-    // Prevent Yjs from being bundled twice (once in demo, once in @zerosync/client).
-    // Two Yjs instances break constructor checks — see https://github.com/yjs/yjs/issues/438
-    dedupe: ['yjs'],
+    // Force a single instance of these packages across the bundle. Without
+    // this, file:-linked workspace packages (`@tovsa7/zerosync-react`) bring
+    // their own copy via devDependencies, and the demo gets two:
+    //   - yjs   — two instances break constructor checks (yjs/yjs#438)
+    //   - react — two instances cause "Cannot read properties of null
+    //             (reading 'useState')" because hooks dispatcher mismatches
+    //             between the React the component imports vs. the one that
+    //             actually rendered the tree.
+    dedupe: ['yjs', 'react', 'react-dom'],
   },
 })
