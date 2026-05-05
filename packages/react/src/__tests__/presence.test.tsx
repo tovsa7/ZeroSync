@@ -6,7 +6,7 @@
  * the hook contract from the real async Room lifecycle.
  */
 
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import { render, screen, act, cleanup } from '@testing-library/react'
 import { useCallback, type ReactElement } from 'react'
 
