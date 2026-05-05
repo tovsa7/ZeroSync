@@ -92,7 +92,7 @@ Browser A                 ZeroSync Server              Browser B
     │                   (server cannot decrypt)             │
 ```
 
-Peers connect P2P by default. When P2P fails (NAT/firewall), the signaling server acts as an encrypted relay — it sees only opaque ciphertext blobs (max 64 KB, 30 s TTL). The server logs only SHA-256-hashed identifiers.
+Peers connect P2P by default. When P2P fails (NAT/firewall), the signaling server forwards opaque ciphertext blobs in-memory between currently-connected peers in the same room (max 64 KB per blob). The server holds no key material and logs only SHA-256-hashed identifiers.
 
 ## Encrypted-at-rest persistence
 
@@ -225,7 +225,7 @@ Run your own signaling server in one command:
 docker run -p 8080:8080 ghcr.io/tovsa7/zerosync-server:latest
 ```
 
-For production (auto-TLS, multi-peer relay, license enforcement): see the [self-hosted guide](https://github.com/tovsa7/ZeroSync/blob/main/SELF-HOSTED.md).
+For production (auto-TLS via Caddy + Let's Encrypt): see the [self-hosted guide](https://github.com/tovsa7/ZeroSync/blob/main/SELF-HOSTED.md).
 
 ## Security
 
@@ -236,7 +236,7 @@ For production (auto-TLS, multi-peer relay, license enforcement): see the [self-
 | Key derivation | HKDF-SHA-256 |
 | Server visibility | Hashed room/peer IDs + ICE candidates only |
 | Peer auth | AES-GCM challenge-response handshake on DataChannel open |
-| Relay blobs | Max 64 KB · TTL 30 s · opaque ciphertext |
+| Relay blobs | Max 64 KB · opaque ciphertext · forwarded in-memory by the signaling server when P2P fails |
 | Third-party crypto | None — `crypto.subtle` only |
 
 Full threat model + disclosure process: [SECURITY.md](https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md).

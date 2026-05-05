@@ -131,7 +131,7 @@ room.leave()
 - **Signaling-only server** — exchanges ICE candidates / SDP between peers so they can find each other, then gets out of the way.
 - **Zero-knowledge server** — holds no keys, logs only SHA-256-hashed room / peer IDs.
 - **Mutual peer auth** — AES-GCM challenge-response on DataChannel open proves both peers possess the room key without transmitting it.
-- **Planned: encrypted relay fallback** — for strict NATs, a future TURN-like mode will forward opaque ciphertext through the server (which still cannot decrypt).
+- **Encrypted blob fallback** — when strict NATs prevent direct P2P, the signaling server forwards opaque ciphertext blobs in-memory between currently connected peers. Server still cannot decrypt — it sees only ciphertext and hashed identifiers.
 
 Full threat model + disclosure process: [`SECURITY.md`](https://github.com/tovsa7/ZeroSync/blob/main/SECURITY.md) · Regulatory mappings (HIPAA §164.312, GDPR Art. 25/32/33/34, SOC 2 CC6): [`COMPLIANCE.md`](https://github.com/tovsa7/ZeroSync/blob/main/COMPLIANCE.md) · Security contact: [`.well-known/security.txt`](https://tovsa7.github.io/ZeroSync/.well-known/security.txt)
 
@@ -243,8 +243,10 @@ Chrome 89+, Firefox 78+, Safari 15+, Edge 89+. Node.js ≥ 20 for server-side in
 packages/client/   TypeScript SDK        (@tovsa7/zerosync-client on npm)
 packages/react/    React hooks package   (@tovsa7/zerosync-react)
 demo/              React collaborative editor demo
-docs/              Protocol + architecture + security documentation
+landing/           Astro landing page (deploys to github.io/ZeroSync)
 ```
+
+The Apache 2.0 signaling server lives in [github.com/tovsa7/zerosync-self-hosted](https://github.com/tovsa7/zerosync-self-hosted). Architecture/protocol/compliance documentation is in this repo's [SECURITY.md](SECURITY.md), [COMPLIANCE.md](COMPLIANCE.md), and [SELF-HOSTED.md](SELF-HOSTED.md).
 
 ## For companies
 

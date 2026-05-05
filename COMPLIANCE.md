@@ -171,7 +171,7 @@ customer has access to all plaintext operations in-browser and can log them
 via their own backend.
 
 ### Planned (H1 2027)
-Per [ROADMAP](docs/ROADMAP.md) feature 6 — "Enterprise Audit Trail":
+Per the [Roadmap](#roadmap) section below — "Enterprise Audit Trail":
 
 - Client-side encrypted append-only event log
 - Customer holds the audit encryption key (separate from room keys)
@@ -197,7 +197,7 @@ working without change.
 | Signed DPA templates (for customer → customer's customer) | On first enterprise inquiry |
 | BAA template (for managed-hosting offering, if launched) | Pending entity formation |
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for full engineering roadmap.
+Full engineering roadmap is tracked in the private dev workspace; the items above are the user-facing compliance-adjacent ones. Reach out to `contact.zerosync@proton.me` for current ETAs on any specific item.
 
 ---
 
