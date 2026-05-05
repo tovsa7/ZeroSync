@@ -101,13 +101,9 @@ const ogImage = `${siteUrl}og-image.png`
       applicationCategory: 'DeveloperApplication',
       operatingSystem:   'Web, Linux, Docker',
       url:               siteUrl,
-      license:           'MIT (client SDK) + BSL 1.1 (server)',
+      license:           'MIT (client SDK) + Apache-2.0 (signaling server)',
       offers: [
-        { '@type': 'Offer', name: 'Community',  price: '0',    priceCurrency: 'USD' },
-        { '@type': 'Offer', name: 'Startup',    price: '99',   priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
-        { '@type': 'Offer', name: 'Team',       price: '399',  priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
-        { '@type': 'Offer', name: 'Business',   price: '1499', priceCurrency: 'USD', priceSpecification: { '@type': 'UnitPriceSpecification', unitCode: 'MON' } },
-        { '@type': 'Offer', name: 'Enterprise', priceCurrency: 'USD', availability: 'https://schema.org/InStock', description: 'Custom contracts — contact contact.zerosync@proton.me' },
+        { '@type': 'Offer', name: 'Open source', price: '0', priceCurrency: 'USD', description: 'Apache 2.0 signaling server + MIT client SDK — free forever, no production license fees, no per-room or per-peer limits.' },
       ],
     })} />
   </head>

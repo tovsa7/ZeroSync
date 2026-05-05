@@ -31,7 +31,7 @@ ZeroSync is a zero-knowledge architecture. The signaling server:
 - Never holds encryption keys
 - Exchanges only signaling metadata between peers (ICE candidates, SDP) — user data flows directly between browsers
 - Logs only SHA-256 hashed room/peer IDs
-- Planned encrypted relay fallback (for strict NATs) will forward opaque ciphertext only — server still cannot decrypt
+- When direct WebRTC fails (strict NAT, corporate proxy), the server forwards opaque ciphertext blobs in-memory between currently-connected peers — server still cannot decrypt
 
 **Cryptographic primitives:**
 - AES-256-GCM (data encryption, Web Crypto API)
