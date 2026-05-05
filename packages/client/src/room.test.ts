@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { Room } from './room.js'
+import { Room, RoomJoinError } from './room.js'
 import type { RoomOptions } from './room.js'
 import type { SignalingClient, SignalingEventMap, SignalingEventName } from './signaling.js'
 
@@ -402,5 +402,66 @@ describe('Room isInitiator — glare prevention', () => {
     const offers = ws.sent.filter(m => JSON.parse(m).type === 'ICE_OFFER')
     expect(offers).toHaveLength(0)
     room.leave()
+  })
+})
+
+// ── Room.join — rejection paths (signaling-handshake failure) ────────────────
+//
+// When the WS handshake fails before PEER_LIST, Room.join probes GET /health
+// on the same origin to learn *why*: 429 ⇒ capacity, 200 ⇒ unknown (race),
+// other / fetch-fail ⇒ unreachable. The thrown RoomJoinError carries the
+// reason so callers can surface a precise UX status. See room.ts.
+
+describe('Room.join — rejection paths', () => {
+  async function failHandshake(fetchStub: unknown): Promise<unknown> {
+    vi.stubGlobal('fetch', fetchStub)
+    const opts = await defaultOpts()
+    const joinPromise = Room.join(opts)
+    // SignalingClient.connect() runs synchronously up to `new WebSocket(...)`;
+    // the MockWebSocket instance exists by this point.
+    const ws = MockWebSocket.instances.at(-1)!
+    ws.onclose?.()
+    return joinPromise
+  }
+
+  it('throws RoomJoinError(reason=capacity) when /health returns 429', async () => {
+    const join = failHandshake(vi.fn().mockResolvedValue({ status: 429, ok: false }))
+    await expect(join).rejects.toBeInstanceOf(RoomJoinError)
+    await expect(join).rejects.toMatchObject({ reason: 'capacity' })
+  })
+
+  it('throws RoomJoinError(reason=unreachable) when /health fetch fails', async () => {
+    const join = failHandshake(vi.fn().mockRejectedValue(new Error('network')))
+    await expect(join).rejects.toMatchObject({ reason: 'unreachable' })
+  })
+
+  it('throws RoomJoinError(reason=unreachable) on 5xx /health response', async () => {
+    const join = failHandshake(vi.fn().mockResolvedValue({ status: 503, ok: false }))
+    await expect(join).rejects.toMatchObject({ reason: 'unreachable' })
+  })
+
+  it('throws RoomJoinError(reason=unknown) when /health returns 200 (race)', async () => {
+    const join = failHandshake(vi.fn().mockResolvedValue({ status: 200, ok: true }))
+    await expect(join).rejects.toMatchObject({ reason: 'unknown' })
+  })
+
+  it('preserves the original WS error as cause', async () => {
+    const join = failHandshake(vi.fn().mockResolvedValue({ status: 429, ok: false }))
+    try {
+      await join
+      expect.fail('expected rejection')
+    } catch (err) {
+      expect(err).toBeInstanceOf(RoomJoinError)
+      expect((err as RoomJoinError).cause).toBeInstanceOf(Error)
+    }
+  })
+
+  it('probes the right URL: wss host + /ws → https + /health', async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({ status: 429, ok: false })
+    await failHandshake(fetchSpy).catch(() => { /* expected */ })
+    expect(fetchSpy).toHaveBeenCalledWith(
+      'https://test.local/health',
+      expect.objectContaining({ method: 'GET' }),
+    )
   })
 })

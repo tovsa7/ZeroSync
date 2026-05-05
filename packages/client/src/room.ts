@@ -35,6 +35,37 @@ export type RoomStatus = 'connected' | 'reconnecting' | 'closed'
 
 export type StatusCallback = (status: RoomStatus) => void
 
+/**
+ * Reason a Room.join() request failed at the signaling-handshake phase.
+ *
+ * - 'capacity'    — server returned HTTP 429 on GET /health (per-IP cap reached).
+ * - 'unreachable' — /health probe failed (network down, DNS, TLS, server crash).
+ * - 'unknown'     — /health responded 200 but WS handshake failed (race: a
+ *                   slot freed up between the WS attempt and the probe; or
+ *                   the WS endpoint is broken while /health is healthy).
+ */
+export type RoomJoinRejectReason = 'capacity' | 'unreachable' | 'unknown'
+
+/**
+ * Thrown by Room.join() when the signaling-handshake fails.
+ *
+ * After the underlying WebSocket error, the SDK issues a follow-up GET to
+ * /health on the same origin to learn *why* — browser WebSocket close
+ * events do not expose HTTP status codes, so a 429 capacity rejection is
+ * indistinguishable from a network drop without this probe.
+ *
+ * `reason` carries the diagnostic. The original WS error is on `cause`.
+ */
+export class RoomJoinError extends Error {
+  readonly reason: RoomJoinRejectReason
+
+  constructor(message: string, reason: RoomJoinRejectReason, cause?: unknown) {
+    super(message, cause === undefined ? undefined : { cause })
+    this.name   = 'RoomJoinError'
+    this.reason = reason
+  }
+}
+
 export interface RoomOptions {
   serverUrl:  string
   roomId:     string
@@ -97,13 +128,26 @@ export class Room {
   static async join(opts: RoomOptions): Promise<Room> {
     const doc = new Y.Doc()
 
-    const signaling = await SignalingClient.connect({
-      serverUrl: opts.serverUrl,
-      roomId:    opts.roomId,
-      peerId:    opts.peerId,
-      nonce:     opts.nonce,
-      hmac:      opts.hmac,
-    })
+    let signaling: SignalingClient
+    try {
+      signaling = await SignalingClient.connect({
+        serverUrl: opts.serverUrl,
+        roomId:    opts.roomId,
+        peerId:    opts.peerId,
+        nonce:     opts.nonce,
+        hmac:      opts.hmac,
+      })
+    } catch (err) {
+      // WebSocket close events drop HTTP status, so probe GET /health on the
+      // same origin to learn whether this was a per-IP cap (429) vs a real
+      // network/server failure. See RoomJoinError doc comment.
+      const reason = await probeRejectReason(opts.serverUrl)
+      throw new RoomJoinError(
+        `Room.join failed at signaling phase: ${reason}`,
+        reason,
+        err,
+      )
+    }
 
     // Determine WebRTC initiator by peer ID lexicographic order to prevent glare:
     // exactly one side sends the offer for each pair.
@@ -185,11 +229,17 @@ export class Room {
         room.setStatus('reconnecting')
       })
       .on('reconnect', ({ peers }) => {
-        // After WS reconnect, PEER_LIST may contain peers that joined while
-        // the connection was down. addPeer is idempotent — existing connections
-        // are skipped; new ones are established.
+        // After WS reconnect, drop every existing PeerConnection and re-add
+        // from the refreshed PEER_LIST. Stale PCs negotiated against the
+        // dropped signaling session would otherwise stay relay-only until a
+        // 30 s+ ICE timeout (N1 in the 2026-05-05 test report).
+        //
+        // Re-adding with the correct initiator role (lex-ordered peerId) also
+        // avoids a glare scenario the previous unconditional `true` could
+        // cause for peers that joined during the disconnect window.
+        transport.closeAllPeers()
         for (const peerId of peers) {
-          transport.addPeer(peerId, true)
+          transport.addPeer(peerId, isInitiator(peerId))
         }
         room.setStatus('connected')
       })
@@ -271,5 +321,41 @@ export class Room {
     this.presence.destroy()
     this.transport.close()
     this.signaling.close()
+  }
+}
+
+/**
+ * Derive the GET /health URL from a signaling server URL.
+ *
+ *   wss://host/ws        → https://host/health
+ *   ws://localhost:8080/ws → http://localhost:8080/health
+ *
+ * Replaces the WS scheme with HTTP and rewrites the final path segment.
+ */
+function deriveHealthUrl(serverUrl: string): string {
+  const u = new URL(serverUrl)
+  u.protocol = u.protocol === 'wss:' ? 'https:' : 'http:'
+  u.pathname = u.pathname.replace(/\/[^/]*$/, '/health')
+  return u.toString()
+}
+
+/**
+ * After a signaling-handshake failure, probe GET /health to learn the
+ * rejection reason. See RoomJoinError doc comment.
+ *
+ * - 429 → 'capacity'   (per-IP cap reached)
+ * - 2xx → 'unknown'    (slot freed up between WS attempt and probe, or the
+ *                       WS endpoint is broken while /health is healthy)
+ * - other / fetch fails → 'unreachable'
+ */
+async function probeRejectReason(serverUrl: string): Promise<RoomJoinRejectReason> {
+  try {
+    const url = deriveHealthUrl(serverUrl)
+    const res = await fetch(url, { method: 'GET' })
+    if (res.status === 429) return 'capacity'
+    if (res.ok)             return 'unknown'
+    return 'unreachable'
+  } catch {
+    return 'unreachable'
   }
 }

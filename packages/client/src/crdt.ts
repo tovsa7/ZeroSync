@@ -124,7 +124,8 @@ export class CRDTSync {
         }
       } catch (err) {
         // Tampered / wrong-key / corrupted row. Don't block sync.
-        console.warn('[zerosync] persistence.load() failed, starting fresh:', err)
+        // info-level: the fresh-start fallback is the expected, correct behavior.
+        console.info('[zerosync] persistence.load() failed, starting fresh:', err)
       }
     }
   }

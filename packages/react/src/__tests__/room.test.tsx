@@ -34,8 +34,17 @@ function StatusProbe(): ReactElement {
   return <span data-testid="status-probe">{status}</span>
 }
 
-function withContext(value: ZeroSyncContextValue, child: ReactElement): ReactElement {
-  return <ZeroSyncContext.Provider value={value}>{child}</ZeroSyncContext.Provider>
+/**
+ * Wrap a probe in ZeroSyncContext.Provider. `rejectedReason` defaults to null
+ * so existing call sites stay terse — pass it explicitly to test the
+ * 'rejected' status.
+ */
+function withContext(
+  value: Pick<ZeroSyncContextValue, 'room' | 'status'> & Partial<ZeroSyncContextValue>,
+  child: ReactElement,
+): ReactElement {
+  const full: ZeroSyncContextValue = { rejectedReason: null, ...value }
+  return <ZeroSyncContext.Provider value={full}>{child}</ZeroSyncContext.Provider>
 }
 
 // ── tests ───────────────────────────────────────────────────────────────────

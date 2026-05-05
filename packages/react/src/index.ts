@@ -16,13 +16,13 @@
  *   only need to import from one package
  */
 
-export { ZeroSyncProvider }                      from './provider.js'
-export type { ZeroSyncProviderProps }            from './provider.js'
-export { ZeroSyncContext }                       from './context.js'
-export type { ConnectionStatus, ZeroSyncContextValue } from './context.js'
-export { useRoom, useConnectionStatus }          from './room.js'
-export { usePresence, useMyPresence }            from './presence.js'
-export { useYText, useYMap, useYArray }          from './yjs.js'
+export { ZeroSyncProvider }                                     from './provider.js'
+export type { ZeroSyncProviderProps }                           from './provider.js'
+export { ZeroSyncContext }                                      from './context.js'
+export type { ConnectionStatus, RejectedReason, ZeroSyncContextValue } from './context.js'
+export { useRoom, useConnectionStatus, useRejectedReason }      from './room.js'
+export { usePresence, useMyPresence }                           from './presence.js'
+export { useYText, useYMap, useYArray }                         from './yjs.js'
 
 // Re-export crypto helper so consumers can derive persistKey without taking
 // an additional dependency on @tovsa7/zerosync-client directly.

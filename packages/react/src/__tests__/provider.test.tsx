@@ -19,19 +19,30 @@ import * as Y from 'yjs'
 import { ZeroSyncProvider } from '../provider.js'
 import { ZeroSyncContext } from '../context.js'
 
-// Mock the client SDK. The Provider uses Room.join and EncryptedPersistence.open;
-// other SDK exports are not touched here.
-vi.mock('@tovsa7/zerosync-client', () => ({
-  Room: {
-    join: vi.fn(),
-  },
-  EncryptedPersistence: {
-    open: vi.fn(),
-  },
-}))
+// Mock the client SDK. The Provider uses Room.join, EncryptedPersistence.open,
+// and the RoomJoinError class for `instanceof` reason routing — the mock must
+// supply a real (or stand-in) class so `err instanceof RoomJoinError` doesn't
+// throw at runtime. The class is defined *inside* the factory because vi.mock
+// is hoisted above top-level declarations.
+vi.mock('@tovsa7/zerosync-client', () => {
+  class MockRoomJoinError extends Error {
+    readonly reason: 'capacity' | 'unreachable' | 'unknown'
+    constructor(message: string, reason: 'capacity' | 'unreachable' | 'unknown') {
+      super(message)
+      this.name   = 'RoomJoinError'
+      this.reason = reason
+    }
+  }
+  return {
+    Room: { join: vi.fn() },
+    EncryptedPersistence: { open: vi.fn() },
+    RoomJoinError: MockRoomJoinError,
+  }
+})
 
 import {
   Room,
+  RoomJoinError,
   EncryptedPersistence,
   type RoomStatus,
   type StatusCallback,
@@ -83,6 +94,7 @@ function ContextProbe(): ReactElement {
     <div>
       <div data-testid="room">{ctx.room ? 'room' : 'null'}</div>
       <div data-testid="status">{ctx.status}</div>
+      <div data-testid="rejectedReason">{ctx.rejectedReason ?? 'null'}</div>
     </div>
   )
 }
@@ -178,7 +190,7 @@ describe('ZeroSyncProvider', () => {
     expect(mock.leaveCalled()).toBe(true)
   })
 
-  it('invokes onError and sets status=closed when Room.join rejects', async () => {
+  it('invokes onError and sets status=rejected (reason=unknown) on generic Room.join rejection', async () => {
     const error  = new Error('connection failed')
     const onErr  = vi.fn()
     vi.mocked(Room.join).mockRejectedValue(error)
@@ -194,7 +206,26 @@ describe('ZeroSyncProvider', () => {
     expect(onErr).toHaveBeenCalledTimes(1)
     expect(onErr).toHaveBeenCalledWith(error)
     expect(screen.getByTestId('room').textContent).toBe('null')
-    expect(screen.getByTestId('status').textContent).toBe('closed')
+    // Generic errors collapse to reason='unknown' (only RoomJoinError carries
+    // a precise reason from the SDK's /health probe).
+    expect(screen.getByTestId('status').textContent).toBe('rejected')
+    expect(screen.getByTestId('rejectedReason').textContent).toBe('unknown')
+  })
+
+  it('forwards RoomJoinError.reason to context.rejectedReason', async () => {
+    const error = new RoomJoinError('cap reached', 'capacity')
+    vi.mocked(Room.join).mockRejectedValue(error)
+
+    render(
+      <ZeroSyncProvider {...baseOpts}>
+        <ContextProbe />
+      </ZeroSyncProvider>,
+    )
+
+    await flush()
+
+    expect(screen.getByTestId('status').textContent).toBe('rejected')
+    expect(screen.getByTestId('rejectedReason').textContent).toBe('capacity')
   })
 
   it('tears down a Room that resolves after unmount', async () => {

@@ -49,11 +49,12 @@
 import { useEffect, useRef, useState, type ReactElement, type ReactNode } from 'react'
 import {
   Room,
+  RoomJoinError,
   EncryptedPersistence,
   type RoomOptions,
   type RoomStatus,
 } from '@tovsa7/zerosync-client'
-import { ZeroSyncContext, type ConnectionStatus } from './context.js'
+import { ZeroSyncContext, type ConnectionStatus, type RejectedReason } from './context.js'
 
 /**
  * Props for ZeroSyncProvider. Mirrors RoomOptions but replaces the SDK's
@@ -77,8 +78,9 @@ export interface ZeroSyncProviderProps extends Omit<RoomOptions, 'persistence'> 
 export function ZeroSyncProvider(props: ZeroSyncProviderProps): ReactElement {
   const { children, onError, persistKey, ...roomOpts } = props
 
-  const [room,   setRoom]   = useState<Room | null>(null)
-  const [status, setStatus] = useState<ConnectionStatus>('connecting')
+  const [room,           setRoom]           = useState<Room | null>(null)
+  const [status,         setStatus]         = useState<ConnectionStatus>('connecting')
+  const [rejectedReason, setRejectedReason] = useState<RejectedReason | null>(null)
 
   // onError may change identity across renders (e.g. inline lambda).
   // Read via ref to avoid retriggering the join effect on identity change.
@@ -131,7 +133,11 @@ export function ZeroSyncProvider(props: ZeroSyncProviderProps): ReactElement {
       } catch (err) {
         if (cancelled) return
         setRoom(null)
-        setStatus('closed')
+        // RoomJoinError carries the precise rejection cause from the SDK's
+        // /health probe (capacity / unreachable / unknown). Other errors
+        // (e.g. EncryptedPersistence.open failure) collapse to 'unknown'.
+        setStatus('rejected')
+        setRejectedReason(err instanceof RoomJoinError ? err.reason : 'unknown')
         onErrorRef.current?.(err)
         // If persistence opened but Room.join rejected, close it now.
         persistence?.close()
@@ -149,7 +155,7 @@ export function ZeroSyncProvider(props: ZeroSyncProviderProps): ReactElement {
   }, [])
 
   return (
-    <ZeroSyncContext.Provider value={{ room, status }}>
+    <ZeroSyncContext.Provider value={{ room, status, rejectedReason }}>
       {children}
     </ZeroSyncContext.Provider>
   )

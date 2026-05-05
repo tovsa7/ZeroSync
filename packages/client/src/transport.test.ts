@@ -572,6 +572,36 @@ describe('Transport.removePeer', () => {
   })
 })
 
+describe('Transport.closeAllPeers', () => {
+  it('closes every existing PeerConnection and empties getConnectionSummary', async () => {
+    const { transport } = await makeTransport()
+    transport.addPeer('peer-a', true)
+    transport.addPeer('peer-b', true)
+    await vi.waitFor(() => { expect(MockPC.instances.length).toBe(2) })
+
+    transport.closeAllPeers()
+
+    expect(MockPC.instances[0]!.connectionState).toBe('closed')
+    expect(MockPC.instances[1]!.connectionState).toBe('closed')
+    expect(transport.getConnectionSummary()).toEqual({ total: 0, p2p: 0 })
+    transport.close()
+  })
+
+  it('subsequent addPeer creates a fresh PeerConnection (post-reconnect path)', async () => {
+    const { transport } = await makeTransport()
+    transport.addPeer('peer-a', true)
+    await vi.waitFor(() => { expect(MockPC.instances.length).toBe(1) })
+
+    transport.closeAllPeers()
+    transport.addPeer('peer-a', true)
+
+    // A new PC is created — total instances grows to 2.
+    await vi.waitFor(() => { expect(MockPC.instances.length).toBe(2) })
+    expect(MockPC.instances[1]!.connectionState).not.toBe('closed')
+    transport.close()
+  })
+})
+
 describe('Transport.getConnectionSummary', () => {
   it('returns total=0, p2p=0 with no peers', async () => {
     const { transport } = await makeTransport()

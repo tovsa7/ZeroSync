@@ -55,6 +55,10 @@ jobs:
           # Example: wss://123.45.67.89:8080/ws (Hetzner IP)
           # When a custom domain is ready, change to wss://demo.zerosync.dev/ws
           VITE_SERVER_URL: ${{ vars.VITE_SERVER_URL }}
+          # Public demo mode — shows friendlier message when server is unreachable
+          # (capacity / downtime). Self-hosters omit this var and get the
+          # `docker compose up` hint.
+          VITE_DEMO_MODE: public
           # Demo moved from /ZeroSync/ root to /ZeroSync/demo/ subpath.
           VITE_BASE_PATH: /${{ github.event.repository.name }}/demo/
         run: |

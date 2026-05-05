@@ -11,6 +11,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [@tovsa7/zerosync-client 0.3.0] — 2026-05-05
+
+### Added
+- **`RoomJoinError`** — new exported error class thrown by `Room.join()` when
+  the signaling handshake fails. Carries a `reason: 'capacity' | 'unreachable'
+  | 'unknown'` field plus the original WebSocket error on `cause`.
+- **`RoomJoinRejectReason`** — exported type alias for the `reason` field.
+- **HEAD-fallback rejection detection.** After a WebSocket handshake failure,
+  `Room.join()` issues a `GET /health` on the same origin to determine why:
+  - HTTP 429 → `reason='capacity'` (per-IP cap reached on the server)
+  - HTTP 5xx / fetch failure → `reason='unreachable'`
+  - HTTP 200 → `reason='unknown'` (race: a slot freed up between the WS
+    attempt and the probe, or the WS endpoint is broken while /health is fine)
+
+  Browser WebSocket close events drop HTTP status, so without this probe a
+  capacity rejection is indistinguishable from a network drop. Pair with
+  `zerosync-self-hosted ≥ 0.2.0` whose `/health` is now cap-aware.
+
+- **`Transport.closeAllPeers()`** — new public method that closes every
+  RTCPeerConnection without tearing down signaling subscriptions.
+
+### Changed
+- **WebSocket reconnect handler now resets all peer connections.** When the
+  signaling WS reconnects, stale `RTCPeerConnection`s (negotiated against the
+  dropped session) are closed and the peer list is re-added with the correct
+  lex-ordered initiator role. Previously, peers stayed relay-only for 30 s+
+  after a WS reconnect — N1 in the 2026-05-05 pre-launch test report.
+- The reconnect re-add now uses `isInitiator(peerId)` instead of an
+  unconditional `true`. This fixes a latent glare scenario for peers that
+  joined the room during the WS-disconnect window.
+- `persistence.load() failed, starting fresh` is now logged at `console.info`
+  instead of `console.warn` — the fresh-start fallback is the expected,
+  correct behaviour, not an anomaly.
+
+### Internal / tests
+- 5 new tests for `Available()` on `ConnLimiter` (server-side counterpart).
+- 6 new tests for `RoomJoinError` rejection paths (capacity, unreachable, 5xx,
+  unknown, cause-propagation, derived-URL correctness).
+- 2 new tests for `Transport.closeAllPeers()`.
+
+---
+
+## [@tovsa7/zerosync-react 0.3.0] — 2026-05-05
+
+### Added
+- **`'rejected'`** — new value in `ConnectionStatus` for `Room.join()` failures.
+- **`RejectedReason`** — exported type alias matching the SDK's
+  `RoomJoinRejectReason` (`'capacity' | 'unreachable' | 'unknown'`).
+- **`useRejectedReason()`** — new hook. Returns the rejection cause when
+  `status === 'rejected'`, else `null`. Pair with `useConnectionStatus()` to
+  surface a precise UX message (e.g. "Server at capacity" vs "Server
+  unavailable").
+- `rejectedReason: RejectedReason | null` field on `ZeroSyncContextValue`.
+
+### Changed — BREAKING
+- **`'closed'` no longer means "Room.join rejected".** It is now reserved
+  exclusively for the Provider-unmounted case (`leave()` was called). Failed
+  joins produce `status === 'rejected'` with `useRejectedReason()` carrying
+  the cause.
+
+  **Migration:** if your code does `if (status === 'closed') showError(...)`,
+  change it to `if (status === 'rejected') showError(useRejectedReason())`.
+
+- `peerDependencies['@tovsa7/zerosync-client']` bumped from `^0.2.0` to
+  `^0.3.0` — required for the `RoomJoinError` re-export.
+- Provider's catch path now distinguishes `RoomJoinError` (forwards
+  `err.reason`) from other rejections (collapses to `'unknown'`).
+
+### Internal / tests
+- 1 new test verifying `RoomJoinError.reason` propagates to context.
+- Test mocks updated to include a stand-in `RoomJoinError` class.
+
+---
+
 ## [@tovsa7/zerosync-react 0.2.1] — 2026-05-05
 
 ### Fixed
@@ -114,7 +188,8 @@ is unaffected and stays on 0.2.0.
 
 ---
 
-[Unreleased]: https://github.com/tovsa7/ZeroSync/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/tovsa7/ZeroSync/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/tovsa7/ZeroSync/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/tovsa7/ZeroSync/compare/v0.1.7...v0.2.0
 [0.1.7]: https://github.com/tovsa7/ZeroSync/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/tovsa7/ZeroSync/compare/v0.1.5...v0.1.6

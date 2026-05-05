@@ -32,7 +32,7 @@ function createMockRoomWithDoc(doc: Y.Doc = new Y.Doc()): Room {
 
 function withRoom(room: Room | null, child: ReactElement): ReactElement {
   return (
-    <ZeroSyncContext.Provider value={{ room, status: room ? 'connected' : 'connecting' }}>
+    <ZeroSyncContext.Provider value={{ room, status: room ? 'connected' : 'connecting', rejectedReason: null }}>
       {child}
     </ZeroSyncContext.Provider>
   )

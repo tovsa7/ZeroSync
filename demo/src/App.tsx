@@ -21,13 +21,48 @@ import {
   useConnectionStatus,
   useMyPresence,
   usePresence,
+  useRejectedReason,
   useRoom,
   useYText,
+  type RejectedReason,
 } from '@zerosync/react'
 
 // ── Config ──────────────────────────────────────────────────────────────────
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL ?? 'ws://localhost:8080/ws'
+
+/**
+ * Deployment context for user-facing copy when the server is unreachable.
+ * 'self-hosted' (default): assumes the user runs the server, mentions `docker compose up`.
+ * 'public':                public demo — neutral message with self-host link.
+ */
+const DEMO_MODE: 'public' | 'self-hosted' =
+  import.meta.env.VITE_DEMO_MODE === 'public' ? 'public' : 'self-hosted'
+
+/** Status-bar label for the 'rejected' state. */
+function rejectedLabel(reason: RejectedReason | null): string {
+  if (reason === 'capacity')    return 'Server at capacity'
+  if (reason === 'unreachable') return 'Server unavailable'
+  return 'Cannot connect'
+}
+
+/** Editor placeholder for the 'rejected' state, branched by deployment mode. */
+function rejectedPlaceholder(
+  reason: RejectedReason | null,
+  mode:   'public' | 'self-hosted',
+): string {
+  if (mode === 'self-hosted') {
+    if (reason === 'capacity') {
+      return 'Server at per-IP cap. Increase `--max-conns-per-ip` or wait for a slot.'
+    }
+    return 'Server unreachable. Start it with `docker compose up` — changes will sync once connected.'
+  }
+  // public demo
+  if (reason === 'capacity') {
+    return 'Demo at capacity — try again in a moment. Self-host: github.com/tovsa7/ZeroSync'
+  }
+  return 'Server unavailable — content will sync once reconnected. Self-host: github.com/tovsa7/ZeroSync'
+}
 
 /** localStorage key used to suppress onboarding hints after first dismiss. */
 const ONBOARDING_KEY = 'zerosync_onboarding_done'
@@ -214,9 +249,10 @@ interface EditorProps {
 }
 
 const Editor: FC<EditorProps> = ({ roomId, roomKey }) => {
-  const isMobile = useIsMobile()
-  const status   = useConnectionStatus()
-  const room     = useRoom()
+  const isMobile       = useIsMobile()
+  const status         = useConnectionStatus()
+  const rejectedReason = useRejectedReason()
+  const room           = useRoom()
   const text     = useYText('editor')                               // re-renders on Y.Text mutation
   const peers    = usePresence<{ name: string }>()
   const [, setMyPresence] = useMyPresence<{ name: string }>()
@@ -336,12 +372,12 @@ const Editor: FC<EditorProps> = ({ roomId, roomKey }) => {
   const statusColor =
     status === 'connected'    ? '#5EEAD4' :
     status === 'reconnecting' ? '#f0a030' :
-    status === 'closed'       ? '#f0a030' :
+    status === 'rejected'     ? '#f0a030' :
                                 '#888'
   const statusLabel =
     status === 'connected'    ? 'Connected' :
     status === 'reconnecting' ? 'Reconnecting…' :
-    status === 'closed'       ? 'Offline (server unreachable)' :
+    status === 'rejected'     ? rejectedLabel(rejectedReason) :
                                 'Connecting…'
 
   const connIsP2P = connSummary.total > 0 && connSummary.p2p === connSummary.total
@@ -452,8 +488,8 @@ const Editor: FC<EditorProps> = ({ roomId, roomKey }) => {
           value={textValue}
           onChange={handleInput}
           placeholder={
-            status === 'closed'
-              ? 'Server unreachable. Start it with `docker compose up` — changes will sync once connected.'
+            status === 'rejected'
+              ? rejectedPlaceholder(rejectedReason, DEMO_MODE)
               : 'Start typing… all content is encrypted before sync.'
           }
           spellCheck={false}

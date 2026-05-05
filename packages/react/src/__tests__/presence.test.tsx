@@ -62,7 +62,7 @@ function createMockRoom(initial: ReadonlyMap<string, PresenceState> = new Map())
 
 function withRoom(room: Room | null, child: ReactElement): ReactElement {
   return (
-    <ZeroSyncContext.Provider value={{ room, status: room ? 'connected' : 'connecting' }}>
+    <ZeroSyncContext.Provider value={{ room, status: room ? 'connected' : 'connecting', rejectedReason: null }}>
       {child}
     </ZeroSyncContext.Provider>
   )

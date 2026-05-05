@@ -249,6 +249,24 @@ export class Transport {
     this.conns.delete(remotePeerId)
   }
 
+  /**
+   * Close every peer connection without tearing down signaling subscriptions.
+   *
+   * Called by the room layer after a WebSocket reconnect: the original
+   * RTCPeerConnections were negotiated against a now-stale signaling session,
+   * and their ICE candidates may reference network paths that no longer work.
+   * Without this reset, peers stay stuck on the relay path until each PC
+   * eventually times out (30 s+) — observed in pre-launch testing as N1.
+   *
+   * The room layer immediately re-adds peers from the refreshed PEER_LIST,
+   * which restarts ICE gathering and SDP negotiation from a clean slate.
+   */
+  closeAllPeers(): void {
+    for (const peerId of Array.from(this.conns.keys())) {
+      this.removePeer(peerId)
+    }
+  }
+
   // ── Sending ─────────────────────────────────────────────────────────────────
 
   /**
