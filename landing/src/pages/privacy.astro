@@ -1,0 +1,101 @@
+---
+import Base from '../layouts/Base.astro'
+import Footer from '../components/Footer.astro'
+
+const title = 'Privacy — ZeroSync'
+const description = 'Privacy policy for the ZeroSync landing page (tovsa7.github.io/ZeroSync). What data the site collects, how it is used, and how to request deletion.'
+---
+
+<Base title={title} description={description}>
+  <main class="px-6 py-24 max-w-3xl mx-auto text-neutral-300 leading-relaxed">
+    <h1 class="text-3xl sm:text-4xl font-bold text-neutral-100 mb-3">Privacy</h1>
+    <p class="text-sm text-neutral-500 mb-10">Last updated: 2026-05-05</p>
+
+    <h2 class="text-xl font-semibold text-neutral-100 mt-10 mb-3">Architecture</h2>
+    <p>
+      ZeroSync is end-to-end encrypted by design. The signaling server (whether
+      you self-host it or use the public demo) never holds room keys and cannot
+      read message content — payloads are encrypted in your browser with
+      AES-256-GCM before transmission. Server-side logs contain only SHA-256-hashed
+      room and peer identifiers; no plaintext IDs or content is ever recorded.
+      See <a class="text-accent hover:underline" href="https://github.com/tovsa7/ZeroSync/blob/main/COMPLIANCE.md">COMPLIANCE.md</a>
+      for the architecture-to-control mapping.
+    </p>
+
+    <h2 class="text-xl font-semibold text-neutral-100 mt-10 mb-3">Scope of this policy</h2>
+    <p>
+      This policy covers the marketing and documentation site at
+      <code class="text-neutral-200">tovsa7.github.io/ZeroSync</code>. The MIT
+      client SDK, the Apache 2.0 self-hosted server, and your own deployment
+      handle data per their own behavior — they do not phone home and they do
+      not share data with this site or its maintainer.
+    </p>
+
+    <h2 class="text-xl font-semibold text-neutral-100 mt-10 mb-3">What this site collects</h2>
+    <ul class="list-disc list-outside pl-5 my-4 space-y-3">
+      <li>
+        <strong class="text-neutral-100">Microsoft Clarity</strong> —
+        anonymous heatmaps, session recordings, and aggregated traffic
+        analytics. Clarity does not capture form values, password fields, or
+        text marked as sensitive. Scope: this landing only.
+      </li>
+      <li>
+        <strong class="text-neutral-100">Tally form ("Get notified")</strong> —
+        only when you choose to submit it. Fields: email (required), company
+        name, team size, industry, and free-text answers. Used to respond to
+        your inquiry and to notify you when the commercial enterprise plugin
+        ships.
+      </li>
+      <li>
+        <strong class="text-neutral-100">GitHub Pages</strong> — the site is
+        served from GitHub Pages, which logs request IP and user-agent per
+        <a class="text-accent hover:underline" href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement">GitHub's general privacy statement</a>.
+      </li>
+    </ul>
+
+    <h2 class="text-xl font-semibold text-neutral-100 mt-10 mb-3">How we use it</h2>
+    <p>
+      Form submissions arrive in the maintainer's inbox at
+      <a class="text-accent hover:underline" href="mailto:contact.zerosync@proton.me">contact.zerosync@proton.me</a>.
+      They are read to reply to you personally and to size the commercial
+      offering pipeline. Submissions are never sold, shared, or used for
+      unrelated marketing.
+    </p>
+
+    <h2 class="text-xl font-semibold text-neutral-100 mt-10 mb-3">Storage and retention</h2>
+    <p>
+      Tally stores submissions on its servers (in the EU). Email replies stay
+      in the maintainer's Proton Mail inbox, encrypted at rest. Submissions
+      are kept until the inquiry is resolved or you ask for deletion —
+      whichever comes first.
+    </p>
+
+    <h2 class="text-xl font-semibold text-neutral-100 mt-10 mb-3">Your rights (GDPR)</h2>
+    <p>
+      You may request access, correction, or deletion of any data you've
+      submitted by emailing
+      <a class="text-accent hover:underline" href="mailto:contact.zerosync@proton.me?subject=Data%20deletion%20request">contact.zerosync@proton.me</a>.
+      We aim to reply within a few business days, and in any case within the
+      30-day GDPR window.
+    </p>
+
+    <h2 class="text-xl font-semibold text-neutral-100 mt-10 mb-3">Cookies</h2>
+    <p>
+      This site sets no first-party cookies. Microsoft Clarity sets analytics
+      cookies for session reconstruction; you can opt out via your browser's
+      "Do Not Track" setting or
+      <a class="text-accent hover:underline" href="https://privacy.microsoft.com/en-us/privacystatement">Microsoft's privacy controls</a>.
+    </p>
+
+    <h2 class="text-xl font-semibold text-neutral-100 mt-10 mb-3">Contact</h2>
+    <p>
+      Questions about this policy or about ZeroSync's data handling more
+      broadly:
+      <a class="text-accent hover:underline" href="mailto:contact.zerosync@proton.me?subject=Privacy%20question">contact.zerosync@proton.me</a>.
+      You will reach the maintainer directly.
+    </p>
+
+    <p class="mt-14"><a class="text-sm text-neutral-500 hover:text-accent" href="./">← Home</a></p>
+  </main>
+  <Footer />
+</Base>
