@@ -11,6 +11,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [@tovsa7/zerosync-react 0.2.1] — 2026-05-05
+
+### Fixed
+- **`react` is now correctly declared as a `peerDependency`** instead of a
+  regular `dependency` in the published package. v0.2.0 incorrectly shipped
+  with `react` as a direct dependency, which caused consumer apps to end up
+  with two copies of React in their bundle and runtime failures like
+  `Uncaught TypeError: Cannot read properties of null (reading 'useState')`
+  the moment any hook (`useYText`, `usePresence`, …) ran. Local source
+  already had the correct `peerDependencies` declaration — this release
+  just rebuilds and republishes with that config so npm resolution dedupes
+  React against the consumer app.
+
+This is a packaging fix only — no behaviour change. `@tovsa7/zerosync-client`
+is unaffected and stays on 0.2.0.
+
+---
+
 ## [0.2.0] — 2026-04-30
 
 ### Added

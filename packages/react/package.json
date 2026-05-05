@@ -1,6 +1,6 @@
 {
   "name": "@tovsa7/zerosync-react",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "React hooks for ZeroSync — end-to-end encrypted real-time collaboration",
   "license": "MIT",
   "keywords": [
